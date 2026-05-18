@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food Tracker Pro</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/1.39.1/iconfont/tabler-icons.min.css">
+
+<style>
+:root {
+  --bg: #f7f5f0;
+  --surface: #ffffff;
+  --border: rgba(0,0,0,0.09);
+  --border-strong: rgba(0,0,0,0.18);
+  --text: #1a1a1a;
+  --text-muted: #888;
+  --text-hint: #bbb;
+  --accent: #2c5fe6;
+  --accent-bg: #eef2fd;
+  --success: #1a9e6e;
+  --success-bg: #e8f7f2;
+  --danger: #e24b4a;
+  --radius: 14px;
+  --radius-sm: 8px;
+
+  --font-sans:'DM Sans',sans-serif;
+  --color-text-primary:#1a1a1a;
+  --color-text-secondary:#777;
+  --color-text-tertiary:#aaa;
+  --color-text-success:#1a9e6e;
+  --color-background-primary:#ffffff;
+  --color-background-secondary:#f3f3f1;
+  --color-background-info:#eef2fd;
+  --color-text-info:#2c5fe6;
+  --color-border-info:#b8c7f8;
+  --color-border-secondary:rgba(0,0,0,0.14);
+  --color-border-tertiary:rgba(0,0,0,0.08);
+  --border-radius-md:10px;
+  --border-radius-lg:16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #141414;
+    --surface: #1e1e1e;
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.18);
+    --text: #f0ede8;
+    --text-muted: #999;
+    --text-hint: #666;
+    --accent: #5b84f0;
+    --accent-bg: #1a2340;
+    --success: #2ec98a;
+    --success-bg: #0f2820;
+    --danger:#ff6b6b;
+
+    --color-text-primary:#f0ede8;
+    --color-text-secondary:#aaa;
+    --color-text-tertiary:#666;
+    --color-text-success:#2ec98a;
+    --color-background-primary:#1e1e1e;
+    --color-background-secondary:#2a2a2a;
+    --color-background-info:#1a2340;
+    --color-text-info:#7ea0ff;
+    --color-border-info:#334b91;
+    --color-border-secondary:rgba(255,255,255,0.16);
+    --color-border-tertiary:rgba(255,255,255,0.08);
+  }
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  font-family:var(--font-sans);
+  background:var(--bg);
+  color:var(--color-text-primary);
+  min-height:100vh;
+}
+
+.container{
+  max-width:520px;
+  margin:0 auto;
+  padding:20px 16px 60px;
+}
+
+.top-bar{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:18px 20px;
+  position:sticky;
+  top:0;
+  z-index:20;
+  backdrop-filter:blur(10px);
+}
+
+.top-bar h1{
+  font-size:18px;
+  font-weight:500;
+  letter-spacing:-0.02em;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--font-sans);font-size:14px;color:var(--color-text-primary);}
+.tab-bar{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;}
+.tab{padding:8px 13px;font-size:13px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary);cursor:pointer;transition:.15s;font-family:var(--font-sans);}
+.tab.active{background:var(--color-background-secondary);color:var(--color-text-primary);border-color:var(--color-border-secondary);font-weight:500;}
+.view{display:none;}.view.active{display:block;}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem;}
+.card-sec{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.75rem 1rem;}
+.label{font-size:12px;color:var(--color-text-secondary);margin-bottom:3px;}
+.val{font-size:22px;font-weight:500;}
+.section-title{font-size:15px;font-weight:500;margin-bottom:10px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;}
+input,select,textarea{width:100%;font-size:13px;padding:10px 12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:var(--color-background-secondary);color:var(--color-text-primary);font-family:var(--font-sans);}
+textarea{resize:none;}
+.btn{width:100%;padding:10px;font-size:13px;font-weight:500;border-radius:var(--border-radius-md);background:transparent;border:0.5px solid var(--color-border-secondary);color:var(--color-text-primary);cursor:pointer;margin-top:8px;transition:.15s;font-family:var(--font-sans);}
+.btn:hover{background:var(--color-background-secondary);}
+.btn-sm{padding:5px 12px;font-size:12px;width:auto;margin-top:0;}
+.tag{display:inline-block;font-size:12px;border-radius:99px;padding:5px 10px;cursor:pointer;border:1px solid transparent;margin:3px 3px 0 0;}
+.tag:not(.active){background:var(--color-background-secondary);color:var(--color-text-secondary);border-color:var(--color-border-tertiary);}
+.tag.active.t-nuda{background:#B5D4F4;color:#0C447C;border-color:#378ADD;}
+.tag.active.t-stres{background:#F5C4B3;color:#712B13;border-color:#D85A30;}
+.tag.active.t-tv{background:#C0DD97;color:#27500A;border-color:#639922;}
+.tag.active.t-inne{background:#D3D1C7;color:#444441;border-color:#888780;}
+.tag.active.t-zmeczenie{background:#EEEDFE;color:#3C3489;border-color:#7F77DD;}
+.tag.active.t-towarzystwo{background:#FBEAF0;color:#72243E;border-color:#D4537E;}
+.hunger-row{display:flex;gap:5px;margin:6px 0;}
+.hunger-btn{flex:1;padding:8px 0;font-size:12px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);background:transparent;color:var(--color-text-secondary);cursor:pointer;text-align:center;}
+.hunger-btn.active{background:var(--color-background-info);color:var(--color-text-info);border-color:var(--color-border-info);font-weight:500;}
+.entry{font-size:12px;border-bottom:0.5px solid var(--color-border-tertiary);padding:7px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+.entry:last-child{border-bottom:none;}
+.bar-wrap{height:8px;background:var(--color-background-secondary);border-radius:99px;overflow:hidden;margin-top:4px;}
+.bar-fill{height:100%;border-radius:99px;}
+.empty{font-size:13px;color:var(--color-text-tertiary);text-align:center;padding:1.5rem 0;}
+.streak-box{text-align:center;padding:1.25rem;background:var(--color-background-secondary);border-radius:var(--border-radius-lg);margin-bottom:1rem;}
+.streak-num{font-size:48px;font-weight:500;line-height:1;}
+.streak-label{font-size:13px;color:var(--color-text-secondary);margin-top:4px;}
+.goal-item{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid var(--color-border-tertiary);}
+.goal-item:last-child{border-bottom:none;}
+.goal-badge{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.goal-done{background:#EAF3DE;}.goal-todo{background:var(--color-background-secondary);}
+.cal-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary);}
+.cal-row:last-child{border-bottom:none;}
+.row{display:flex;gap:8px;align-items:flex-end;}
+.row>*{flex:1;}
+.row .btn{margin-top:0;}
+</style>
+</head>
+<body>
+<div class="top-bar">
+  <h1>🍓 Food Tracker Pro</h1>
+</div>
+
+<div class="container">
+
+<div style="padding:1rem 0;">
+<h2 class="sr-only">Rozszerzony tracker nawyków żywieniowych</h2>
+
+<div class="tab-bar">
+  <button class="tab active" onclick="sw('log',this)"><i class="ti ti-pencil" aria-hidden="true"></i> Dziennik</button>
+  <button class="tab" onclick="sw('calories',this)"><i class="ti ti-flame" aria-hidden="true"></i> Kalorie</button>
+  <button class="tab" onclick="sw('weight',this)"><i class="ti ti-scale" aria-hidden="true"></i> Waga</button>
+  
+  <button class="tab" onclick="sw('stats',this)"><i class="ti ti-chart-bar" aria-hidden="true"></i> Statystyki</button>
+</div>
+
+<!-- LOG -->
+<div id="view-log" class="view active">
+  <div class="card">
+    <p class="section-title">Co się stało?</p>
+    <select id="entry-type" onchange="updType()">
+      <option value="napad">Napad jedzeniowy</option>
+      <option value="impuls">Oparłam się impulsowi ✓</option>
+      <option value="posilek">Zaplanowany posiłek</option>
+    </select>
+    <div style="margin-top:10px;" id="hunger-sec">
+      <div class="label">Poziom głodu</div>
+      <div class="hunger-row">
+        <button class="hunger-btn" onclick="setH(this,1)">Brak</button>
+        <button class="hunger-btn" onclick="setH(this,2)">Mały</button>
+        <button class="hunger-btn" onclick="setH(this,3)">Średni</button>
+        <button class="hunger-btn" onclick="setH(this,4)">Duży</button>
+      </div>
+    </div>
+    <div style="margin-top:10px;" id="trigger-sec">
+      <div class="label">Wyzwalacz (zaznacz wszystkie pasujące)</div>
+      <div id="tags">
+        <span class="tag" data-k="nuda" onclick="togTag(this)">🎯 Nuda</span>
+        <span class="tag" data-k="stres" onclick="togTag(this)">😤 Stres</span>
+        <span class="tag" data-k="tv" onclick="togTag(this)">📺 Wieczór/TV</span>
+        <span class="tag" data-k="zmeczenie" onclick="togTag(this)">😴 Zmęczenie</span>
+        <span class="tag" data-k="towarzystwo" onclick="togTag(this)">👥 Towarzystwo</span>
+        <span class="tag" data-k="inne" onclick="togTag(this)">❓ Nie wiem</span>
+      </div>
+    </div>
+    <div style="margin-top:10px;">
+      <div class="label">Notatka (opcjonalnie)</div>
+      <textarea id="note" rows="2" placeholder="Co zjadłam, jak się czułam, co pomogło..."></textarea>
+    </div>
+    <button class="btn" onclick="saveEntry()"><i class="ti ti-plus" aria-hidden="true"></i> Zapisz</button>
+  </div>
+</div>
+
+<!-- CALORIES -->
+<div id="view-calories" class="view">
+  <div class="card">
+    <div class="grid2" style="margin-bottom:12px;">
+      <div class="card-sec">
+        <div class="label">Dziś spożyto</div>
+        <div class="val" id="cal-today">0</div>
+        <div style="font-size:11px;color:var(--color-text-tertiary);">kcal</div>
+      </div>
+      <div class="card-sec">
+        <div class="label">Cel dzienny</div>
+        <div class="val" id="cal-goal-disp">—</div>
+        <div style="font-size:11px;color:var(--color-text-tertiary);">kcal</div>
+      </div>
+    </div>
+    <div id="cal-bar-wrap" style="display:none;margin-bottom:12px;">
+      <div class="label" id="cal-bar-label"></div>
+      <div class="bar-wrap"><div class="bar-fill" id="cal-bar" style="background:#378ADD;width:0%;"></div></div>
+    </div>
+    <div class="label">Dodaj posiłek / produkt</div>
+    <input id="cal-name" placeholder="Nazwa (np. owsianka, kawa z mlekiem)" style="margin-bottom:6px;" />
+    <div class="row">
+      <div>
+        <div class="label">Kalorie (kcal)</div>
+        <input type="number" id="cal-kcal" placeholder="np. 350" min="0" max="5000" />
+      </div>
+      <div>
+        <div class="label">Białko (g, opcjonalnie)</div>
+        <input type="number" id="cal-protein" placeholder="np. 12" min="0" />
+      </div>
+    </div>
+    <button class="btn" onclick="addMeal()"><i class="ti ti-plus" aria-hidden="true"></i> Dodaj</button>
+  </div>
+  <div class="card">
+    <p class="section-title">Dzisiejsze posiłki</p>
+    <div id="meal-list"><p class="empty">Brak wpisów na dziś.</p></div>
+  </div>
+  <div class="card">
+    <p class="section-title">Ustawienia kalorii</p>
+    <div class="label">Dzienny cel kalorii</div>
+    <div class="row" style="margin-bottom:6px;">
+      <input type="number" id="cal-goal-input" placeholder="np. 1600" min="800" max="4000" />
+      <button class="btn btn-sm" onclick="saveCalGoal()">Zapisz</button>
+    </div>
+    <div style="font-size:12px;color:var(--color-text-secondary);">Sugerowany deficyt dla -1 kg/tydz.: ok. 500 kcal poniżej zapotrzebowania.</div>
+  </div>
+</div>
+
+<!-- WEIGHT -->
+<div id="view-weight" class="view">
+  <div id="weight-goal-banner" class="card" style="display:none;text-align:center;">
+    <div style="font-size:28px;margin-bottom:4px;">🎯</div>
+    <div class="section-title" id="wg-title"></div>
+    <div id="wg-sub" style="font-size:13px;color:var(--color-text-secondary);"></div>
+  </div>
+  <div class="card">
+    <div class="grid3" style="margin-bottom:12px;">
+      <div class="card-sec"><div class="label">Aktualna</div><div class="val" id="w-cur">—</div><div style="font-size:11px;color:var(--color-text-tertiary);">kg</div></div>
+      <div class="card-sec"><div class="label">Docelowa</div><div class="val" id="w-goal-disp">—</div><div style="font-size:11px;color:var(--color-text-tertiary);">kg</div></div>
+      <div class="card-sec"><div class="label">Do celu</div><div class="val" id="w-left">—</div><div style="font-size:11px;color:var(--color-text-tertiary);">kg</div></div>
+    </div>
+    <div id="weight-progress-bar" style="display:none;margin-bottom:12px;">
+      <div class="label" id="wpb-label"></div>
+      <div class="bar-wrap"><div class="bar-fill" id="wpb-fill" style="background:#1D9E75;width:0%;"></div></div>
+    </div>
+    <div id="eta-box" style="display:none;margin-bottom:12px;" class="card-sec">
+      <div class="label">Szacowany czas do celu</div>
+      <div id="eta-text" style="font-size:14px;font-weight:500;"></div>
+      <div id="eta-date" style="font-size:12px;color:var(--color-text-secondary);"></div>
+    </div>
+    <div class="label">Dodaj pomiar wagi (kg)</div>
+    <div class="row">
+      <input type="number" id="weight-input" placeholder="np. 82.5" step="0.1" min="30" max="250" />
+      <button class="btn btn-sm" onclick="saveWeight()">Zapisz</button>
+    </div>
+  </div>
+  <div class="card">
+    <p class="section-title">Ustaw wagę docelową</p>
+    <div class="row">
+      <input type="number" id="weight-goal-input" placeholder="np. 65" step="0.5" min="30" max="250" />
+      <button class="btn btn-sm" onclick="saveWeightGoal()">Ustaw cel</button>
+    </div>
+  </div>
+  <div class="card">
+    <p class="section-title">Historia wagi</p>
+    <div id="weight-list"><p class="empty">Brak pomiarów.</p></div>
+    <div style="margin-top:12px;position:relative;height:180px;display:none;" id="weight-chart-wrap">
+      <canvas id="weight-chart" role="img" aria-label="Wykres wagi w czasie"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div id="view-stats" class="view">
+  <div class="grid2" style="margin-bottom:1rem;">
+    <div class="card-sec"><div class="label">Napady (razem)</div><div class="val" id="st-napady">0</div></div>
+    <div class="card-sec"><div class="label">Oparte impulsy</div><div class="val" id="st-oparte">0</div></div>
+  </div>
+  <div class="card">
+    <p class="section-title">Wyzwalacze napadów</p>
+    <div id="trigger-stats"><p class="empty">Brak danych.</p></div>
+  </div>
+  <div class="card">
+    <p class="section-title">Pora dnia napadów</p>
+    <div id="time-stats"><p class="empty">Brak danych.</p></div>
+  </div>
+  <div class="card">
+    <p class="section-title">Głód podczas napadów</p>
+    <div id="hunger-stats"><p class="empty">Brak danych.</p></div>
+  </div>
+  <button class="btn" onclick="sendPrompt('Mam dane z trackera nawyków żywieniowych. Przeanalizuj wzorce i zaproponuj konkretne strategie na moje wyzwalacze.')">
+    <i class="ti ti-sparkles" aria-hidden="true"></i> Poproś Claude o analizę ↗
+  </button>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+let entries = JSON.parse(localStorage.getItem('ft_entries')||'[]');
+let weights = JSON.parse(localStorage.getItem('ft_weights')||'[]');
+let meals = JSON.parse(localStorage.getItem('ft_meals')||'{}');
+
+let settings = JSON.parse(localStorage.getItem('ft_settings')||'{}');
+let selHunger=0, selTags=[], wChart=null;
+
+function save(){
+  localStorage.setItem('ft_entries',JSON.stringify(entries));
+  localStorage.setItem('ft_weights',JSON.stringify(weights));
+  localStorage.setItem('ft_meals',JSON.stringify(meals));
+  
+  localStorage.setItem('ft_settings',JSON.stringify(settings));
+}
+
+function sw(name,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('view-'+name).classList.add('active');
+  if(name==='weight')renderWeight();
+  if(name==='calories')renderCal();
+  
+  if(name==='stats')renderStats();
+}
+
+function updType(){
+  const t=document.getElementById('entry-type').value;
+  document.getElementById('hunger-sec').style.display=(t==='posilek')?'none':'block';
+  document.getElementById('trigger-sec').style.display=(t==='napad'||t==='impuls')?'block':'none';
+}
+
+function setH(btn,val){
+  selHunger=val;
+  document.querySelectorAll('.hunger-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function togTag(el){
+  const k=el.dataset.k;
+  const cm={nuda:'t-nuda',stres:'t-stres',tv:'t-tv',inne:'t-inne',zmeczenie:'t-zmeczenie',towarzystwo:'t-towarzystwo'};
+  if(el.classList.contains('active')){
+    el.classList.remove('active',cm[k]);
+    selTags=selTags.filter(t=>t!==k);
+  } else {
+    el.classList.add('active',cm[k]);
+    selTags.push(k);
+  }
+}
+
+function saveEntry(){
+  const type=document.getElementById('entry-type').value;
+  const note=document.getElementById('note').value.trim();
+  const now=new Date();
+  entries.unshift({type,hunger:selHunger,tags:[...selTags],note,ts:now.toISOString(),
+    dateStr:now.toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}),
+    hour:now.getHours()});
+  save();
+  document.getElementById('note').value='';
+  selHunger=0;selTags=[];
+  document.querySelectorAll('.hunger-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tag').forEach(t=>{t.className='tag';});
+  const btn=document.querySelector('#view-log .btn');
+  const orig=btn.innerHTML;
+  btn.innerHTML='<i class="ti ti-check"></i> Zapisano!';
+  setTimeout(()=>{btn.innerHTML=orig;},1500);
+}
+
+function todayKey(){return new Date().toISOString().slice(0,10);}
+
+function addMeal(){
+  const name=document.getElementById('cal-name').value.trim();
+  const kcal=parseInt(document.getElementById('cal-kcal').value)||0;
+  const protein=parseInt(document.getElementById('cal-protein').value)||0;
+  if(!name||!kcal)return;
+  const d=todayKey();
+  if(!meals[d])meals[d]=[];
+  meals[d].push({name,kcal,protein,time:new Date().toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'})});
+  save();
+  document.getElementById('cal-name').value='';
+  document.getElementById('cal-kcal').value='';
+  document.getElementById('cal-protein').value='';
+  renderCal();
+}
+
+function saveCalGoal(){
+  const v=parseInt(document.getElementById('cal-goal-input').value);
+  if(v>=800&&v<=4000){settings.calGoal=v;save();renderCal();}
+}
+
+function renderCal(){
+  const d=todayKey();
+  const list=meals[d]||[];
+  const total=list.reduce((s,m)=>s+m.kcal,0);
+  document.getElementById('cal-today').textContent=total;
+  if(settings.calGoal){
+    document.getElementById('cal-goal-disp').textContent=settings.calGoal;
+    document.getElementById('cal-goal-input').value=settings.calGoal;
+    const pct=Math.min(100,Math.round(total/settings.calGoal*100));
+    const left=settings.calGoal-total;
+    document.getElementById('cal-bar-wrap').style.display='block';
+    document.getElementById('cal-bar-label').textContent=(left>0)?`Zostało ${left} kcal (${pct}% celu)`:`Przekroczono cel o ${Math.abs(left)} kcal`;
+    document.getElementById('cal-bar').style.width=pct+'%';
+    document.getElementById('cal-bar').style.background=pct>100?'#E24B4A':'#378ADD';
+  } else {
+    document.getElementById('cal-goal-disp').textContent='—';
+  }
+  const el=document.getElementById('meal-list');
+  if(!list.length){el.innerHTML='<p class="empty">Brak wpisów na dziś.</p>';return;}
+  el.innerHTML=list.map((m,i)=>`<div class="cal-row">
+    <div style="flex:1"><div style="font-weight:500;">${m.name}</div><div style="font-size:11px;color:var(--color-text-tertiary);">${m.time}${m.protein?' · '+m.protein+'g białka':''}</div></div>
+    <div style="font-size:14px;font-weight:500;color:var(--color-text-secondary);">${m.kcal} kcal</div>
+    <button onclick="delMeal(${i})" style="background:none;border:none;cursor:pointer;color:var(--color-text-tertiary);font-size:16px;padding:0 4px;"><i class="ti ti-x"></i></button>
+  </div>`).join('');
+}
+
+function delMeal(i){
+  const d=todayKey();
+  meals[d].splice(i,1);
+  save();renderCal();
+}
+
+function saveWeightGoal(){
+  const v=parseFloat(document.getElementById('weight-goal-input').value);
+  if(v>=30&&v<=250){settings.weightGoal=v;save();renderWeight();}
+}
+
+function saveWeight(){
+  const v=parseFloat(document.getElementById('weight-input').value);
+  if(!v||v<30||v>250)return;
+  const now=new Date();
+  weights.push({w:v,ts:now.toISOString(),dateStr:now.toLocaleDateString('pl-PL',{day:'2-digit',month:'2-digit',year:'2-digit'})});
+  save();renderWeight();
+  document.getElementById('weight-input').value='';
+}
+
+function renderWeight(){
+  if(settings.weightGoal)document.getElementById('weight-goal-input').value=settings.weightGoal;
+  const cur=weights.length?weights[weights.length-1].w:null;
+  const goal=settings.weightGoal||null;
+  document.getElementById('w-cur').textContent=cur?cur.toFixed(1):'—';
+  document.getElementById('w-goal-disp').textContent=goal?goal.toFixed(1):'—';
+  if(cur&&goal){
+    const left=cur-goal;
+    document.getElementById('w-left').textContent=left>0?'+'+left.toFixed(1):'✓';
+    if(left<=0){
+      document.getElementById('weight-goal-banner').style.display='block';
+      document.getElementById('wg-title').textContent='Cel wagowy osiągnięty!';
+      document.getElementById('wg-sub').textContent=`Zaczęłaś od ${weights[0].w.toFixed(1)} kg, teraz ${cur.toFixed(1)} kg. Brawo!`;
+    } else {
+      document.getElementById('weight-goal-banner').style.display='none';
+    }
+    if(weights.length>=2){
+      const first=weights[0];
+      const startW=first.w;
+      const totalToLose=startW-goal;
+      const lost=startW-cur;
+      const pct=totalToLose>0?Math.min(100,Math.max(0,Math.round(lost/totalToLose*100))):0;
+      document.getElementById('weight-progress-bar').style.display='block';
+      document.getElementById('wpb-label').textContent=`Postęp do celu: ${pct}% (${lost>0?'-'+lost.toFixed(1):'0'} kg z ${totalToLose.toFixed(1)} kg)`;
+      document.getElementById('wpb-fill').style.width=pct+'%';
+      const daysDiff=(new Date(weights[weights.length-1].ts)-new Date(weights[0].ts))/(1000*60*60*24)||1;
+      const rate=lost/daysDiff;
+      if(rate>0&&left>0){
+        document.getElementById('eta-box').style.display='block';
+        const daysLeft=Math.round(left/rate);
+        const eta=new Date();eta.setDate(eta.getDate()+daysLeft);
+        document.getElementById('eta-box').style.display='block';
+        document.getElementById('eta-text').textContent=`ok. ${daysLeft} dni (tempo: ${(rate*7).toFixed(2)} kg/tydz.)`;
+        document.getElementById('eta-date').textContent='Szacowana data: '+eta.toLocaleDateString('pl-PL',{day:'2-digit',month:'long',year:'numeric'});
+      }
+    }
+  } else {
+    document.getElementById('w-left').textContent='—';
+    document.getElementById('weight-progress-bar').style.display='none';
+    document.getElementById('eta-box').style.display='none';
+  }
+  const el=document.getElementById('weight-list');
+  if(!weights.length){el.innerHTML='<p class="empty">Brak pomiarów.</p>';return;}
+  el.innerHTML=weights.slice().reverse().slice(0,10).map(w=>`<div class="entry"><span style="font-weight:500;">${w.w.toFixed(1)} kg</span><span style="font-size:11px;color:var(--color-text-tertiary);">${w.dateStr}</span></div>`).join('');
+  const wrap=document.getElementById('weight-chart-wrap');
+  if(weights.length>=2){
+    wrap.style.display='block';
+    const labs=weights.map(w=>w.dateStr);
+    const data=weights.map(w=>w.w);
+    const datasets=[{label:'Waga',data,borderColor:'#1D9E75',backgroundColor:'rgba(29,158,117,0.07)',tension:0.3,pointRadius:4}];
+    if(goal)datasets.push({label:'Cel',data:weights.map(()=>goal),borderColor:'#E24B4A',borderDash:[4,4],pointRadius:0,fill:false});
+    if(wChart)wChart.destroy();
+    wChart=new Chart(document.getElementById('weight-chart'),{
+      type:'line',data:{labels:labs,datasets},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+        scales:{y:{ticks:{callback:v=>v+' kg'}}}}
+    });
+  }
+}
+
+function renderStats(){
+  const napady=entries.filter(e=>e.type==='napad');
+  const oparte=entries.filter(e=>e.type==='impuls');
+  document.getElementById('st-napady').textContent=napady.length;
+  document.getElementById('st-oparte').textContent=oparte.length;
+  const tCounts={nuda:0,stres:0,tv:0,zmeczenie:0,towarzystwo:0,inne:0};
+  napady.forEach(e=>e.tags.forEach(t=>{if(tCounts[t]!==undefined)tCounts[t]++;}));
+  const total=Object.values(tCounts).reduce((a,b)=>a+b,0);
+  const tel=document.getElementById('trigger-stats');
+  if(!total){tel.innerHTML='<p class="empty">Brak danych.</p>';}
+  else{
+    tel.innerHTML=Object.entries(tCounts).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:2px;">
+          <span>${tLabels[k]}</span><span style="color:var(--color-text-secondary);">${v} (${Math.round(v/total*100)}%)</span>
+        </div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(v/total*100)}%;background:${tColors[k]};"></div></div>
+      </div>`).join('');
+  }
+  const timeBuckets={'Rano (6-11)':0,'Południe (11-15)':0,'Popołudnie (15-19)':0,'Wieczór (19-24)':0,'Noc (0-6)':0};
+  napady.forEach(e=>{
+    const h=e.hour??new Date(e.ts).getHours();
+    if(h>=6&&h<11)timeBuckets['Rano (6-11)']++;
+    else if(h>=11&&h<15)timeBuckets['Południe (11-15)']++;
+    else if(h>=15&&h<19)timeBuckets['Popołudnie (15-19)']++;
+    else if(h>=19)timeBuckets['Wieczór (19-24)']++;
+    else timeBuckets['Noc (0-6)']++;
+  });
+  const ttotal=Object.values(timeBuckets).reduce((a,b)=>a+b,0);
+  const tel2=document.getElementById('time-stats');
+  if(!ttotal){tel2.innerHTML='<p class="empty">Brak danych.</p>';}
+  else{
+    tel2.innerHTML=Object.entries(timeBuckets).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:2px;">
+          <span>${k}</span><span style="color:var(--color-text-secondary);">${v} (${Math.round(v/ttotal*100)}%)</span>
+        </div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(v/ttotal*100)}%;background:#7F77DD;"></div></div>
+      </div>`).join('');
+  }
+  const hCounts={1:0,2:0,3:0,4:0};
+  napady.filter(e=>e.hunger>0).forEach(e=>{hCounts[e.hunger]++;});
+  const htotal=Object.values(hCounts).reduce((a,b)=>a+b,0);
+  const tel3=document.getElementById('hunger-stats');
+  if(!htotal){tel3.innerHTML='<p class="empty">Brak danych o głodzie.</p>';}
+  else{
+    tel3.innerHTML=Object.entries(hCounts).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`
+      <div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:2px;">
+          <span>${hLabels[k]}</span><span style="color:var(--color-text-secondary);">${v} (${Math.round(v/htotal*100)}%)</span>
+        </div>
+        <div class="bar-wrap"><div class="bar-fill" style="width:${Math.round(v/htotal*100)}%;background:#FA C775;"></div></div>
+      </div>`).join('');
+  }
+}
+
+window.addEventListener('DOMContentLoaded',()=>{
+  renderCal();
+  renderWeight();
+  
+  renderStats();
+  updType();
+});
+</script>
+
+
+</div>
+</body>
+</html>
