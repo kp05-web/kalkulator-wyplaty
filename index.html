@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator wypłaty</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: system-ui, sans-serif; background: #f5f5f3; color: #1a1a18; padding: 1rem; max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 500; margin-bottom: 1.5rem; }
+  .section { margin-bottom: 1.5rem; }
+  .section-title { font-size: 12px; font-weight: 500; color: #999; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; }
+  .card { background: #fff; border: 1px solid #e5e4de; border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 10px; }
+  input, select, button { font-family: inherit; font-size: 14px; border: 1px solid #d5d4ce; border-radius: 8px; padding: 8px 10px; color: #1a1a18; background: #fff; outline: none; }
+  input:focus, select:focus { border-color: #888; }
+  button { cursor: pointer; padding: 8px 14px; }
+  button:hover { background: #f0efeb; }
+  button.primary { background: #1a1a18; color: #fff; border-color: #1a1a18; }
+  button.primary:hover { background: #333; }
+  .del { background: none; border: none; color: #bbb; font-size: 16px; padding: 0 4px; cursor: pointer; line-height:1; }
+  .del:hover { color: #c0392b; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .row input, .row select { flex: 1; min-width: 100px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
+  th { font-size: 12px; color: #999; text-align: left; padding: 4px 8px 8px; border-bottom: 1px solid #eee; font-weight: 400; }
+  td { padding: 7px 8px; border-bottom: 1px solid #f0efeb; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media(max-width:480px){ .grid3 { grid-template-columns: 1fr 1fr; } }
+  .metric { background: #f5f5f3; border-radius: 8px; padding: .85rem 1rem; }
+  .metric .lbl { font-size: 12px; color: #999; margin-bottom: 4px; }
+  .metric .val { font-size: 18px; font-weight: 500; }
+  .empty { font-size: 13px; color: #bbb; text-align: center; padding: 1.5rem 0; }
+  .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0efeb; }
+  .summary-row.total { border-bottom: none; font-size: 17px; font-weight: 500; padding-top: 12px; }
+  .green { color: #1d9e75; }
+  label { display: block; font-size: 13px; color: #999; margin-bottom: 4px; }
+  .badge { display: inline-block; font-size: 11px; background: #eef6ff; color: #185fa5; border-radius: 20px; padding: 1px 8px; margin-left: 6px; }
+  .notice { font-size: 12px; color: #aaa; margin-top: 8px; }
+  hr { border: none; border-top: 1px solid #eee; margin: 12px 0; }
+  .red-link { font-size: 12px; color: #c0392b; background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+  .red-link:hover { background: #fdf0f0; }
+
+  /* inline "new month" form */
+  #new-month-form { display:none; margin-top:10px; }
+  #new-month-form.open { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  #new-month-form input { flex:1; min-width:160px; }
+
+  .month-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .month-bar select { flex:1; min-width:160px; font-size:15px; font-weight:500; }
+</style>
+</head>
+<body>
+
+<h1>💰 Kalkulator wypłaty</h1>
+
+<!-- USTAWIENIA -->
+<div class="section">
+  <div class="section-title">Ustawienia</div>
+  <div class="card">
+    <div class="grid2">
+      <div><label>Podstawa (zł)</label>
+        <input type="number" id="base" value="3000" min="0" step="100" inputmode="numeric" oninput="saveSettings();recalc()">
+      </div>
+      <div><label>Procent od usług (%)</label>
+        <input type="number" id="pct" value="20" min="0" max="100" step="0.5" inputmode="decimal" oninput="saveSettings();recalc()">
+      </div>
+    </div>
+    <p class="notice">✓ Wszystkie dane zapisują się automatycznie</p>
+  </div>
+</div>
+
+<!-- CENNIK -->
+<div class="section">
+  <div class="section-title">Cennik usług</div>
+  <div class="card">
+    <div class="row">
+      <input type="text" id="svc-name" placeholder="Nazwa usługi">
+      <input type="number" id="svc-price" placeholder="Cena (zł)" min="0" step="10" inputmode="numeric" style="max-width:130px">
+      <button onclick="addService()">+ Dodaj</button>
+    </div>
+    <div id="svc-list"></div>
+  </div>
+</div>
+
+<!-- MIESIĄC -->
+<div class="section">
+  <div class="section-title">Miesiąc</div>
+  <div class="card">
+    <div class="month-bar">
+      <select id="month-sel" onchange="onMonthChange()"></select>
+      <button onclick="toggleNewMonth()">+ Nowy</button>
+      <button class="red-link" onclick="clearMonth()">🗑 Wyczyść</button>
+      <button class="red-link" onclick="deleteMonth()">✕ Usuń</button>
+    </div>
+    <div id="new-month-form">
+      <input type="text" id="new-month-input" placeholder="np. Czerwiec 2025">
+      <button class="primary" onclick="confirmAddMonth()">Dodaj</button>
+      <button onclick="toggleNewMonth()">Anuluj</button>
+    </div>
+  </div>
+</div>
+
+<!-- KLIENTKI -->
+<div class="section">
+  <div class="section-title">Klientki <span class="badge" id="client-count">0</span></div>
+  <div class="card">
+    <div style="font-size:13px;color:#888;margin-bottom:8px;font-weight:500;">Z cennika</div>
+    <div class="row">
+      <input type="text" id="client-name" placeholder="Imię / opis">
+      <select id="client-svc"><option value="">— wybierz usługę —</option></select>
+      <button class="primary" onclick="addEntry()">+ Dodaj</button>
+    </div>
+    <hr>
+    <div style="font-size:13px;color:#888;margin-bottom:8px;font-weight:500;">Ręcznie (inna kwota)</div>
+    <div class="row">
+      <input type="text" id="manual-name" placeholder="Imię / opis">
+      <input type="text" id="manual-svc-name" placeholder="Nazwa usługi">
+      <input type="number" id="manual-price" placeholder="Kwota (zł)" min="0" step="10" inputmode="numeric" style="max-width:120px">
+      <button onclick="addManualEntry()">+ Dodaj</button>
+    </div>
+    <div id="entry-wrap" style="margin-top:8px">
+      <div class="empty" id="entry-empty">Brak wpisów w tym miesiącu</div>
+      <table id="entry-table" style="display:none">
+        <thead><tr><th>Klientka</th><th>Usługa</th><th>Kwota</th><th></th></tr></thead>
+        <tbody id="entry-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PODSUMOWANIE -->
+<div class="section">
+  <div class="section-title">Podsumowanie</div>
+  <div class="grid3" style="margin-bottom:12px">
+    <div class="metric"><div class="lbl">Podstawa</div><div class="val" id="s-base">0 zł</div></div>
+    <div class="metric"><div class="lbl">Przychód z usług</div><div class="val" id="s-rev">0 zł</div></div>
+    <div class="metric"><div class="lbl">Prowizja (<span id="s-pct-lbl">20</span>%)</div><div class="val" id="s-comm">0 zł</div></div>
+  </div>
+  <div class="card">
+    <div class="summary-row"><span>Podstawa</span><span id="d-base">0 zł</span></div>
+    <div class="summary-row"><span>Prowizja od usług</span><span id="d-comm">0 zł</span></div>
+    <div class="summary-row total"><span>Łączna wypłata</span><span class="green" id="d-total">0 zł</span></div>
+  </div>
+</div>
+
+<script>
+function fmt(n){return Math.round(n).toLocaleString('pl-PL')+' zł';}
+function load(k,d){try{var v=localStorage.getItem(k);return v!==null?JSON.parse(v):d;}catch(e){return d;}}
+function save(k,v){localStorage.setItem(k,JSON.stringify(v));}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+var services=load('wp_services',[]);
+var months=load('wp_months',[]);
+var activeId=load('wp_active',null);
+
+function ensureMonth(){
+  if(!months.length){
+    var now=new Date();
+    var lbl=now.toLocaleString('pl-PL',{month:'long',year:'numeric'});
+    months.push({id:Date.now(),label:lbl,entries:[]});
+    save('wp_months',months);
+  }
+  if(!activeId||!months.find(function(m){return m.id===activeId;})){
+    activeId=months[months.length-1].id;save('wp_active',activeId);
+  }
+}
+function am(){return months.find(function(m){return m.id===activeId;});}
+
+function loadSettings(){
+  var s=load('wp_settings',{base:3000,pct:20});
+  document.getElementById('base').value=s.base;
+  document.getElementById('pct').value=s.pct;
+}
+function saveSettings(){
+  save('wp_settings',{
+    base:parseFloat(document.getElementById('base').value)||0,
+    pct:parseFloat(document.getElementById('pct').value)||0
+  });
+}
+
+// ── cennik ────────────────────────────────────────────────────────────
+function addService(){
+  var name=document.getElementById('svc-name').value.trim();
+  var price=parseFloat(document.getElementById('svc-price').value);
+  if(!name||isNaN(price))return;
+  services.push({id:Date.now(),name:name,price:price});
+  save('wp_services',services);
+  document.getElementById('svc-name').value='';
+  document.getElementById('svc-price').value='';
+  renderServices();renderSelect();
+}
+function removeService(id){
+  services=services.filter(function(s){return s.id!==id;});
+  save('wp_services',services);
+  renderServices();renderSelect();
+}
+function renderServices(){
+  var el=document.getElementById('svc-list');
+  if(!services.length){el.innerHTML='<div class="empty">Cennik jest pusty</div>';return;}
+  el.innerHTML='<table><thead><tr><th>Usługa</th><th>Cena</th><th></th></tr></thead><tbody>'+
+    services.map(function(s){return '<tr><td>'+esc(s.name)+'</td><td>'+fmt(s.price)+'</td>'+
+      '<td><button class="del" onclick="removeService('+s.id+')">✕</button></td></tr>';}).join('')+'</tbody></table>';
+}
+function renderSelect(){
+  var sel=document.getElementById('client-svc');
+  sel.innerHTML='<option value="">— wybierz usługę —</option>'+
+    services.map(function(s){return '<option value="'+s.id+'">'+esc(s.name)+' ('+fmt(s.price)+')</option>';}).join('');
+}
+
+// ── miesiące ──────────────────────────────────────────────────────────
+function renderMonthSel(){
+  var sel=document.getElementById('month-sel');
+  sel.innerHTML=months.map(function(m){
+    return '<option value="'+m.id+'"'+(m.id===activeId?' selected':'')+'>'+esc(m.label)+'</option>';
+  }).join('');
+}
+function onMonthChange(){
+  activeId=parseInt(document.getElementById('month-sel').value);
+  save('wp_active',activeId);
+  renderEntries();recalc();
+}
+function toggleNewMonth(){
+  var f=document.getElementById('new-month-form');
+  if(f.classList.contains('open')){
+    f.classList.remove('open');
+  } else {
+    var now=new Date();
+    document.getElementById('new-month-input').value=now.toLocaleString('pl-PL',{month:'long',year:'numeric'});
+    f.classList.add('open');
+    setTimeout(function(){document.getElementById('new-month-input').focus();},50);
+  }
+}
+function confirmAddMonth(){
+  var lbl=document.getElementById('new-month-input').value.trim();
+  if(!lbl)return;
+  var m={id:Date.now(),label:lbl,entries:[]};
+  months.push(m);activeId=m.id;
+  save('wp_months',months);save('wp_active',activeId);
+  document.getElementById('new-month-form').classList.remove('open');
+  renderMonthSel();renderEntries();recalc();
+}
+function clearMonth(){
+  var m=am();if(!m)return;
+  if(!confirm('Wyczyścić wszystkie wpisy w "'+m.label+'"?'))return;
+  m.entries=[];save('wp_months',months);
+  renderEntries();recalc();
+}
+function deleteMonth(){
+  if(months.length<=1){alert('Nie możesz usunąć ostatniego miesiąca.');return;}
+  var m=am();if(!m)return;
+  if(!confirm('Usunąć miesiąc "'+m.label+'" wraz z wpisami?'))return;
+  months=months.filter(function(x){return x.id!==activeId;});
+  activeId=months[months.length-1].id;
+  save('wp_months',months);save('wp_active',activeId);
+  renderMonthSel();renderEntries();recalc();
+}
+
+// ── klientki ──────────────────────────────────────────────────────────
+function addEntry(){
+  var name=document.getElementById('client-name').value.trim();
+  var svcId=parseInt(document.getElementById('client-svc').value);
+  var svc=services.find(function(s){return s.id===svcId;});
+  if(!name||!svc)return;
+  pushEntry(name,svc.name,svc.price);
+  document.getElementById('client-name').value='';
+  document.getElementById('client-svc').value='';
+}
+function addManualEntry(){
+  var name=document.getElementById('manual-name').value.trim();
+  var svcName=document.getElementById('manual-svc-name').value.trim();
+  var price=parseFloat(document.getElementById('manual-price').value);
+  if(!name||!svcName||isNaN(price))return;
+  pushEntry(name,svcName,price);
+  document.getElementById('manual-name').value='';
+  document.getElementById('manual-svc-name').value='';
+  document.getElementById('manual-price').value='';
+}
+function pushEntry(name,svcName,price){
+  var m=am();if(!m)return;
+  m.entries.push({id:Date.now(),name:name,svcName:svcName,price:price});
+  save('wp_months',months);
+  renderEntries();recalc();
+}
+function removeEntry(id){
+  var m=am();if(!m)return;
+  m.entries=m.entries.filter(function(e){return e.id!==id;});
+  save('wp_months',months);
+  renderEntries();recalc();
+}
+function renderEntries(){
+  var m=am();
+  var entries=m?m.entries:[];
+  document.getElementById('client-count').textContent=entries.length;
+  var empty=document.getElementById('entry-empty');
+  var table=document.getElementById('entry-table');
+  if(!entries.length){empty.style.display='';table.style.display='none';return;}
+  empty.style.display='none';table.style.display='';
+  document.getElementById('entry-body').innerHTML=entries.map(function(e){
+    return '<tr><td>'+esc(e.name)+'</td><td>'+esc(e.svcName)+'</td><td>'+fmt(e.price)+'</td>'+
+      '<td><button class="del" onclick="removeEntry('+e.id+')">✕</button></td></tr>';
+  }).join('');
+}
+
+// ── podsumowanie ──────────────────────────────────────────────────────
+function recalc(){
+  var base=parseFloat(document.getElementById('base').value)||0;
+  var pct=parseFloat(document.getElementById('pct').value)||0;
+  var m=am();
+  var rev=m?m.entries.reduce(function(s,e){return s+e.price;},0):0;
+  var comm=Math.round(rev*pct/100);
+  var total=base+comm;
+  document.getElementById('s-base').textContent=fmt(base);
+  document.getElementById('s-rev').textContent=fmt(rev);
+  document.getElementById('s-comm').textContent=fmt(comm);
+  document.getElementById('s-pct-lbl').textContent=pct;
+  document.getElementById('d-base').textContent=fmt(base);
+  document.getElementById('d-comm').textContent=fmt(comm);
+  document.getElementById('d-total').textContent=fmt(total);
+}
+
+loadSettings();ensureMonth();
+renderServices();renderSelect();renderMonthSel();renderEntries();recalc();
+</script>
+</body>
+</html>
