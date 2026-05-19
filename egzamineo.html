@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Egzamineo — Platforma nauki</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+  :root {
+    --cream: #F8F4EE;
+    --ink: #1A1714;
+    --muted: #6B6560;
+    --accent: #C4651A;
+    --accent-light: #F0E0CE;
+    --border: rgba(26,23,20,0.12);
+    --success: #3B6D11;
+    --success-light: #EAF3DE;
+    --bg: #FDFAF6;
+    --card: #FFFFFF;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(253,250,246,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 0.5px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 58px;
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; font-weight: 500;
+    display: flex; align-items: center; gap: 8px;
+    color: var(--ink); text-decoration: none;
+  }
+  .logo-dot { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; }
+  .nav-tag {
+    font-size: 12px; color: var(--muted);
+    background: var(--accent-light); color: var(--accent);
+    padding: 3px 10px; border-radius: 20px; font-weight: 500;
+  }
+
+  /* LAYOUT */
+  .container { max-width: 760px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+  /* SCREENS */
+  .screen { display: none; animation: fadeUp 0.35s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+
+  /* STEP INDICATOR */
+  .steps {
+    display: flex; align-items: center; gap: 0; margin-bottom: 2.5rem;
+  }
+  .step-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--muted);
+    padding: 6px 0;
+  }
+  .step-item.active { color: var(--ink); font-weight: 500; }
+  .step-item.done { color: var(--success); }
+  .step-circle {
+    width: 26px; height: 26px; border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500; flex-shrink: 0;
+    background: var(--card);
+  }
+  .step-item.active .step-circle { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .step-item.done .step-circle { border-color: var(--success); background: var(--success-light); color: var(--success); }
+  .step-line { flex: 1; height: 1px; background: var(--border); min-width: 20px; }
+
+  /* CARDS */
+  .card {
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    border-radius: 16px;
+    padding: 1.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px; font-weight: 500;
+    margin-bottom: 1.25rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title i { color: var(--accent); font-size: 20px; }
+
+  /* FORM */
+  .field { margin-bottom: 1.1rem; }
+  .field-label {
+    display: block; font-size: 11px; font-weight: 500;
+    color: var(--muted); letter-spacing: 0.06em;
+    text-transform: uppercase; margin-bottom: 6px;
+  }
+  input[type=text], input[type=date], textarea, select {
+    width: 100%;
+    border: 0.5px solid var(--border);
+    border-radius: 9px; padding: 11px 14px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    color: var(--ink); background: transparent;
+    outline: none; transition: border-color 0.2s;
+  }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 90px; line-height: 1.6; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 520px) {
+    .grid2 { grid-template-columns: 1fr; }
+    .day-right { flex-direction: column; align-items: flex-end; gap: 5px; }
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .chat-area { min-height: 240px; max-height: 340px; }
+    .session-info { flex-direction: column; gap: 10px; align-items: flex-start; }
+    .quick-btns { gap: 6px; }
+    .quick-btn { font-size: 11px; padding: 5px 10px; }
+    nav { padding: 0 1rem; }
+    .container { padding: 1.5rem 1rem; }
+  }
+
+  /* UPLOAD */
+  .upload-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: 12px; padding: 2.5rem 1.5rem;
+    text-align: center; cursor: pointer;
+    transition: all 0.2s; position: relative;
+  }
+  .upload-zone:hover { border-color: var(--accent); background: var(--accent-light); }
+  .upload-zone.drag { border-color: var(--accent); background: var(--accent-light); }
+  .upload-zone.done { border-color: var(--success); background: var(--success-light); }
+  .upload-zone i { font-size: 36px; color: var(--muted); display: block; margin-bottom: 0.75rem; }
+  .upload-zone.done i { color: var(--success); }
+  .upload-label { font-size: 15px; color: var(--ink); font-weight: 500; }
+  .upload-sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .upload-filename { font-size: 13px; color: var(--success); font-weight: 500; margin-top: 6px; }
+  #file-input { display: none; }
+
+  /* BUTTONS */
+  .btn-primary {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 13px;
+    background: var(--ink); color: #fff;
+    border: none; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500;
+    cursor: pointer; transition: opacity 0.2s, transform 0.1s;
+    margin-top: 1rem;
+  }
+  .btn-primary:hover { opacity: 0.87; }
+  .btn-primary:active { transform: scale(0.99); }
+  .btn-primary:disabled { opacity: 0.38; cursor: default; }
+
+  .btn-accent {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 13px;
+    background: var(--accent); color: #fff;
+    border: none; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 500;
+    cursor: pointer; transition: opacity 0.2s;
+    margin-top: 1rem;
+  }
+  .btn-accent:hover { opacity: 0.87; }
+
+  .btn-sm {
+    padding: 7px 14px; font-size: 13px;
+    background: transparent; border: 0.5px solid var(--border);
+    border-radius: 8px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; color: var(--muted);
+    transition: all 0.2s;
+  }
+  .btn-sm:hover { border-color: var(--ink); color: var(--ink); }
+
+  .back-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; color: var(--muted); cursor: pointer;
+    background: none; border: none; font-family: 'DM Sans', sans-serif;
+    margin-bottom: 1.75rem; padding: 0;
+  }
+  .back-btn:hover { color: var(--ink); }
+
+  /* STATS */
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.25rem; }
+  .stat-box {
+    background: var(--bg); border-radius: 12px;
+    padding: 1.1rem; text-align: center;
+    border: 0.5px solid var(--border);
+  }
+  .stat-num { font-family: 'Playfair Display', serif; font-size: 30px; color: var(--ink); }
+  .stat-lbl { font-size: 11px; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  /* PROGRESS */
+  .overall-progress { margin-bottom: 1.5rem; }
+  .progress-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .progress-track { height: 5px; background: var(--border); border-radius: 3px; }
+  .progress-fill { height: 5px; background: var(--accent); border-radius: 3px; transition: width 0.5s ease; }
+
+  /* DAY CARDS */
+  .day-card {
+    border: 0.5px solid var(--border); border-radius: 12px;
+    margin-bottom: 0.75rem; overflow: hidden;
+    background: var(--card);
+  }
+  .day-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 1.25rem; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .day-header:hover { background: var(--bg); }
+  .day-header.done-hdr { background: var(--success-light); }
+  .day-left { display: flex; align-items: center; gap: 12px; }
+  .day-num-circle {
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif; font-size: 14px;
+    flex-shrink: 0; color: var(--muted);
+  }
+  .day-num-circle.done-circle { background: var(--success-light); border-color: var(--success); color: var(--success); }
+  .day-focus { font-size: 14px; font-weight: 500; }
+  .day-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .day-right { display: flex; align-items: center; gap: 8px; }
+  .badge {
+    font-size: 11px; font-weight: 500; padding: 3px 9px;
+    border-radius: 20px; white-space: nowrap;
+  }
+  .badge-orange { background: var(--accent-light); color: var(--accent); }
+  .badge-green { background: var(--success-light); color: var(--success); }
+  .badge-review { background: #EEF0FB; color: #534AB7; }
+  .review-circle { border-color: #534AB7; color: #534AB7; background: #EEF0FB; }
+
+  .day-body {
+    display: none; padding: 1rem 1.25rem;
+    border-top: 0.5px solid var(--border);
+    background: var(--card);
+  }
+  .day-body.open { display: block; }
+  .topic-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1rem; }
+  .topic-item { display: flex; align-items: flex-start; gap: 8px; font-size: 14px; line-height: 1.5; }
+  .topic-item i { color: var(--accent); font-size: 14px; margin-top: 3px; flex-shrink: 0; }
+
+  /* SESSION */
+  .session-info {
+    background: var(--accent-light); border-radius: 12px;
+    padding: 1rem 1.25rem; margin-bottom: 1.5rem;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .session-info-left h2 { font-family: 'Playfair Display', serif; font-size: 17px; }
+  .session-info-left p { font-size: 13px; color: var(--accent); margin-top: 3px; }
+
+  .chat-wrap {
+    background: var(--card); border: 0.5px solid var(--border);
+    border-radius: 14px; overflow: hidden;
+  }
+  .chat-area {
+    min-height: 320px; max-height: 460px; overflow-y: auto;
+    padding: 1.25rem; display: flex; flex-direction: column; gap: 0.85rem;
+  }
+  .msg { max-width: 82%; padding: 11px 15px; border-radius: 13px; font-size: 14px; line-height: 1.65; }
+  .msg.ai { background: var(--bg); border: 0.5px solid var(--border); align-self: flex-start; border-bottom-left-radius: 3px; }
+  .msg.user { background: var(--ink); color: #fff; align-self: flex-end; border-bottom-right-radius: 3px; }
+  .msg.loading { color: var(--muted); font-style: italic; }
+  .chat-footer { border-top: 0.5px solid var(--border); padding: 1rem; display: flex; gap: 8px; }
+  .chat-footer input { flex: 1; border-radius: 8px; }
+  .send-btn {
+    padding: 10px 18px; background: var(--accent); color: #fff;
+    border: none; border-radius: 8px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: opacity 0.2s; white-space: nowrap;
+  }
+  .send-btn:hover { opacity: 0.85; }
+  .send-btn:disabled { opacity: 0.4; cursor: default; }
+
+  .quick-btns { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .quick-btn {
+    padding: 6px 12px; font-size: 12px;
+    background: var(--bg); border: 0.5px solid var(--border);
+    border-radius: 20px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; color: var(--muted);
+    transition: all 0.15s;
+  }
+  .quick-btn:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+
+  /* SPINNER */
+  .spinner {
+    display: inline-block; width: 15px; height: 15px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* HERO on screen 1 */
+  .hero { text-align: center; padding: 1rem 0 2.5rem; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 500; letter-spacing: -0.5px; margin-bottom: 0.5rem; }
+  .hero p { font-size: 16px; color: var(--muted); max-width: 440px; margin: 0 auto; line-height: 1.6; }
+
+  .divider { border: none; border-top: 0.5px solid var(--border); margin: 1.25rem 0; }
+
+  .hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="#"><div class="logo-dot"></div>Egzamineo</a>
+  <span class="nav-tag" id="nav-tag">Konfiguracja</span>
+</nav>
+
+<div class="container">
+
+  <!-- ───── SCREEN 1: Setup ───── -->
+  <div class="screen active" id="s1">
+    <div class="hero">
+      <h1>Zacznij się uczyć<br>mądrze, nie ciężko.</h1>
+      <p>Wgraj materiały, podaj datę egzaminu — AI ułoży plan i będzie Cię uczyć krok po kroku.</p>
+    </div>
+
+    <!-- Steps -->
+    <div class="steps">
+      <div class="step-item active"><div class="step-circle">1</div>Materiały</div>
+      <div class="step-line"></div>
+      <div class="step-item"><div class="step-circle">2</div>Ustawienia</div>
+      <div class="step-line"></div>
+      <div class="step-item"><div class="step-circle">3</div>Plan nauki</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-notes"></i>Materiały do nauki</div>
+      <p class="hint" style="margin-bottom:10px;">Notatki, podręcznik, slajdy z wykładów — cokolwiek masz.</p>
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+        <i class="ti ti-upload" id="upload-icon"></i>
+        <div class="upload-label" id="upload-label">Kliknij lub przeciągnij pliki</div>
+        <div class="upload-sub">PDF, TXT, DOCX, PPTX, MD — możesz wybrać wiele plików naraz</div>
+        <div id="upload-fn" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:2px;"></div>
+      </div>
+      <input type="file" id="file-input" accept=".pdf,.txt,.docx,.doc,.pptx,.ppt,.md" multiple>
+      <p class="hint" style="margin-top:10px;">Możesz też wkleić treść ręcznie:</p>
+      <div class="field" style="margin-top:8px;margin-bottom:0;">
+        <textarea id="manual-text" placeholder="Wklej notatki, fragmenty podręcznika..."></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-list-numbers"></i>Zagadnienia egzaminacyjne</div>
+      <p class="hint" style="margin-bottom:10px;">Lista pytań lub tematów od prowadzącego — osobny plik, jeśli masz.</p>
+      <div class="upload-zone" id="upload-zone2" onclick="document.getElementById('file-input2').click()">
+        <i class="ti ti-upload" id="upload-icon2"></i>
+        <div class="upload-label" id="upload-label2">Kliknij lub przeciągnij pliki z zagadnieniami</div>
+        <div class="upload-sub">PDF, TXT, DOCX, PPTX, MD — możesz wybrać wiele plików naraz</div>
+        <div id="upload-fn2" style="margin-top:8px;display:flex;flex-wrap:wrap;gap:2px;"></div>
+      </div>
+      <input type="file" id="file-input2" accept=".pdf,.txt,.docx,.doc,.pptx,.ppt,.md" multiple>
+      <p class="hint" style="margin-top:10px;">Albo wpisz/wklej zagadnienia ręcznie:</p>
+      <div class="field" style="margin-top:8px;margin-bottom:0;">
+        <textarea id="topics-text" placeholder="np. 1. Prawo Ohma 2. Twierdzenie Thevenina 3. Obwody RC..."></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-settings"></i>Ustawienia egzaminu</div>
+      <div class="grid2">
+        <div class="field">
+          <label class="field-label">Przedmiot</label>
+          <input type="text" id="subject" placeholder="np. Fizyka II">
+        </div>
+        <div class="field">
+          <label class="field-label">Data egzaminu</label>
+          <input type="date" id="exam-date">
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">Ile godzin dziennie możesz poświęcić?</label>
+        <input type="text" id="hours" placeholder="np. 2–3 godziny">
+      </div>
+      <div class="field" style="margin-bottom:0;">
+        <label class="field-label">Poziom znajomości materiału</label>
+        <select id="level">
+          <option value="zaczynam od zera">Zaczynam od zera</option>
+          <option value="podstawy znam" selected>Znam podstawy</option>
+          <option value="znam połowę materiału">Znam połowę materiału</option>
+          <option value="prawie gotowa, potrzebuję powtórki">Prawie gotowa — potrzebuję powtórki</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="card" id="api-key-card">
+      <div class="card-title"><i class="ti ti-key"></i>Klucz API Groq <span style="background:var(--success-light);color:var(--success);font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;">Darmowy</span></div>
+      <p class="hint" style="margin-bottom:10px;">Klucz jest zapisywany tylko w Twojej przeglądarce. Uzyskaj bezpłatnie na <a href="https://console.groq.com/keys" target="_blank" style="color:var(--accent);">console.groq.com/keys</a> → "Create API key".</p>
+      <div class="field" style="margin-bottom:0;display:flex;gap:8px;align-items:center;">
+        <input type="password" id="api-key-input" placeholder="gsk_..." style="flex:1;" oninput="saveApiKey()">
+        <span id="api-key-status" style="font-size:12px;color:var(--muted);white-space:nowrap;"></span>
+      </div>
+      <div id="preprocess-status" style="display:none;margin-top:10px;font-size:13px;color:var(--accent);"></div>
+    </div>
+
+    <button class="btn-primary" id="gen-btn" onclick="generatePlan()">
+      <i class="ti ti-sparkles"></i> Wygeneruj plan nauki
+    </button>
+  </div>
+
+  <!-- ───── SCREEN 2: Plan ───── -->
+  <div class="screen" id="s2">
+    <button class="back-btn" onclick="goTo(1)"><i class="ti ti-arrow-left"></i> Wróć do ustawień</button>
+
+    <div class="steps">
+      <div class="step-item done"><div class="step-circle"><i class="ti ti-check" style="font-size:13px;"></i></div>Materiały</div>
+      <div class="step-line"></div>
+      <div class="step-item done"><div class="step-circle"><i class="ti ti-check" style="font-size:13px;"></i></div>Ustawienia</div>
+      <div class="step-line"></div>
+      <div class="step-item active"><div class="step-circle">3</div>Plan nauki</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><i class="ti ti-list-check"></i><span id="plan-title">Plan nauki</span></div>
+      <p style="font-size:14px;color:var(--muted);line-height:1.6;margin-bottom:1.25rem;" id="plan-summary"></p>
+
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-num" id="s-days">—</div><div class="stat-lbl">Dni do egzaminu</div></div>
+        <div class="stat-box"><div class="stat-num" id="s-sessions">—</div><div class="stat-lbl">Sesji nauki</div></div>
+        <div class="stat-box"><div class="stat-num" id="s-done">0</div><div class="stat-lbl">Ukończonych</div></div>
+      </div>
+
+      <div class="overall-progress">
+        <div class="progress-label"><span>Postęp</span><span id="pct-lbl">0%</span></div>
+        <div class="progress-track"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <div id="days-list"></div>
+
+    <button class="btn-accent" onclick="startSession(0)">
+      <i class="ti ti-player-play"></i> Zacznij od pierwszego dnia
+    </button>
+  </div>
+
+  <!-- ───── SCREEN 3: Session ───── -->
+  <div class="screen" id="s3">
+    <button class="back-btn" onclick="goTo(2)"><i class="ti ti-arrow-left"></i> Wróć do planu</button>
+
+    <div class="session-info">
+      <div class="session-info-left">
+        <h2 id="sess-title">Dzień 1</h2>
+        <p id="sess-topics"></p>
+      </div>
+      <button class="btn-sm" onclick="markDone()" style="flex-shrink:0;"><i class="ti ti-circle-check"></i> Ukończ dzień</button>
+    </div>
+
+    <div class="quick-btns" id="quick-btns"></div>
+
+    <div class="chat-wrap">
+      <div class="chat-area" id="chat-area"></div>
+      <div class="chat-footer">
+        <input type="text" id="chat-input" placeholder="Zapytaj o temat, poproś o quiz, wyjaśnienie...">
+        <button class="send-btn" id="send-btn" onclick="sendMessage()"><i class="ti ti-send"></i> Wyślij</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────
+let fileContent = '';
+let topicsContent = '';
+let planData = null;
+let currentDay = 0;
+let currentBlockIdx = 0;
+let blockPhase = 'theory';
+let chatHistory = [];
+let completedDays = new Set();
+
+// ── LocalStorage ───────────────────────────────────────────────
+function saveProgress() {
+  if (!planData) return;
+  try {
+    localStorage.setItem('eg_plan', JSON.stringify(planData));
+    localStorage.setItem('eg_done', JSON.stringify([...completedDays]));
+  } catch(e) {}
+}
+function loadProgress() {
+  try {
+    const p = localStorage.getItem('eg_plan');
+    if (!p) return;
+    planData = JSON.parse(p);
+    const d = localStorage.getItem('eg_done');
+    completedDays = new Set(d ? JSON.parse(d) : []);
+    renderPlan();
+    goTo(2);
+  } catch(e) {}
+}
+
+// ── PDF extraction (no library, no worker) ─────────────────────
+async function extractPdfText(file) {
+  try {
+    const buf = await file.arrayBuffer();
+    const raw = new TextDecoder('latin1').decode(new Uint8Array(buf));
+    const chunks = [];
+    const re = /BT[\s\S]*?ET/g;
+    let block;
+    while ((block = re.exec(raw)) !== null) {
+      const str = block[0];
+      const tj = /\(((?:[^()\\]|\\.)*)  \)\s*Tj/g;
+      let m;
+      while ((m = tj.exec(str)) !== null) chunks.push(m[1]);
+      const tjArr = /\[((?:[^\[\]]|\((?:[^()\\]|\\.)*\))*)\]\s*TJ/g;
+      let m2;
+      while ((m2 = tjArr.exec(str)) !== null) {
+        const inner = m2[1];
+        const re2 = /\(((?:[^()\\]|\\.)*)\)/g;
+        let m3;
+        while ((m3 = re2.exec(inner)) !== null) chunks.push(m3[1]);
+      }
+    }
+    let text = chunks.join(' ')
+      .replace(/\\n/g, ' ').replace(/\\r/g, ' ').replace(/\\t/g, ' ')
+      .replace(/\\([0-7]{3})/g, function(_, o) { return String.fromCharCode(parseInt(o, 8)); })
+      .replace(/\\(.)/g, '$1')
+      .replace(/\s+/g, ' ').trim();
+    if (!text || text.length < 20) {
+      return '[PDF: nie udało się odczytać tekstu. Skopiuj treść ręcznie do pola tekstowego.]';
+    }
+    return text;
+  } catch(e) {
+    return '[Błąd odczytu PDF. Skopiuj treść ręcznie.]';
+  }
+}
+
+// ── DOCX extraction via JSZip ──────────────────────────────────
+async function extractDocxText(file) {
+  const buf = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(buf);
+  const xmlFile = zip.files['word/document.xml'];
+  if (!xmlFile) return '[Nie udało się odczytać DOCX]';
+  const xml = await xmlFile.async('string');
+  const paras = xml.split(/<w:p[ >]/);
+  return paras.map(function(para) {
+    const matches = [...para.matchAll(/<w:t[^>]*>([^<]*)<\/w:t>/g)];
+    return matches.map(function(m) { return m[1]; }).join('');
+  }).filter(function(t) { return t.trim(); }).join('\n');
+}
+
+// ── PPTX extraction via JSZip ──────────────────────────────────
+async function extractPptxText(file) {
+  const buf = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(buf);
+  const slideFiles = Object.keys(zip.files)
+    .filter(function(n) { return /^ppt\/slides\/slide\d+\.xml$/.test(n); })
+    .sort(function(a, b) {
+      return parseInt(a.match(/\d+/)[0]) - parseInt(b.match(/\d+/)[0]);
+    });
+  const texts = await Promise.all(slideFiles.map(async function(sf, i) {
+    const xml = await zip.files[sf].async('string');
+    const matches = [...xml.matchAll(/<a:t[^>]*>([^<]*)<\/a:t>/g)];
+    const slideText = matches.map(function(m) { return m[1]; }).filter(Boolean).join(' ');
+    return '[Slajd ' + (i + 1) + '] ' + slideText;
+  }));
+  return texts.join('\n');
+}
+
+// ── Universal file reader ──────────────────────────────────────
+async function extractTextFromFile(file) {
+  const name = file.name.toLowerCase();
+  try {
+    if (name.endsWith('.txt') || name.endsWith('.md') || name.endsWith('.csv')) {
+      return await file.text();
+    }
+    if (name.endsWith('.docx') || name.endsWith('.doc')) {
+      return await extractDocxText(file);
+    }
+    if (name.endsWith('.pptx') || name.endsWith('.ppt')) {
+      return await extractPptxText(file);
+    }
+    if (name.endsWith('.pdf')) {
+      return await extractPdfText(file);
+    }
+    return await file.text();
+  } catch(e) {
+    return '[Błąd odczytu: ' + file.name + ']';
+  }
+}
+
+async function readFilesAsText(files) {
+  return Promise.all(Array.from(files).map(async function(f) {
+    const text = await extractTextFromFile(f);
+    return { name: f.name, text: text };
+  }));
+}
+
+// ── Upload UI helpers ──────────────────────────────────────────
+function renderFileTags(containerEl, files) {
+  containerEl.innerHTML = '';
+  files.forEach(function(f) {
+    const tag = document.createElement('span');
+    tag.style.cssText = 'display:inline-flex;align-items:center;gap:5px;background:var(--success-light);color:var(--success);font-size:12px;font-weight:500;padding:3px 9px;border-radius:20px;margin:2px 3px;';
+    tag.innerHTML = '<i class="ti ti-file-check" style="font-size:13px;"></i>' + f.name;
+    containerEl.appendChild(tag);
+  });
+}
+
+function setupUpload(zoneId, inputId, iconId, labelId, fnId, onFiles) {
+  const zone = document.getElementById(zoneId);
+  const input = document.getElementById(inputId);
+
+  async function handleFiles(fileArray) {
+    if (!fileArray.length) return;
+    zone.classList.add('done');
+    document.getElementById(iconId).className = 'ti ti-loader';
+    document.getElementById(labelId).textContent = 'Wczytuję...';
+    const results = await readFilesAsText(fileArray);
+    onFiles(results);
+    document.getElementById(iconId).className = 'ti ti-files';
+    document.getElementById(labelId).textContent = fileArray.length === 1 ? 'Plik wgrany!' : fileArray.length + ' pliki wgrane!';
+    renderFileTags(document.getElementById(fnId), results);
+  }
+
+  input.addEventListener('change', function(e) { handleFiles(Array.from(e.target.files)); });
+  zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('drag'); });
+  zone.addEventListener('dragleave', function() { zone.classList.remove('drag'); });
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    zone.classList.remove('drag');
+    const files = Array.from(e.dataTransfer.files);
+    const dt = new DataTransfer();
+    files.forEach(function(f) { dt.items.add(f); });
+    input.files = dt.files;
+    handleFiles(files);
+  });
+}
+
+setupUpload('upload-zone', 'file-input', 'upload-icon', 'upload-label', 'upload-fn',
+  function(results) {
+    fileContent = results.map(function(r) { return '=== ' + r.name + ' ===\n' + r.text; }).join('\n\n');
+  });
+setupUpload('upload-zone2', 'file-input2', 'upload-icon2', 'upload-label2', 'upload-fn2',
+  function(results) {
+    topicsContent = results.map(function(r) { return '=== ' + r.name + ' ===\n' + r.text; }).join('\n\n');
+  });
+
+// ── Preprocess content with AI ─────────────────────────────────
+async function preprocessContent(rawMat, rawTopics) {
+  var apiKey = getApiKey();
+  if (!apiKey || (!rawMat && !rawTopics)) return { mat: rawMat, topics: rawTopics };
+
+  var statusEl = document.getElementById('preprocess-status');
+  if (statusEl) { statusEl.textContent = '⏳ Analizuję materiały...'; statusEl.style.display = 'block'; }
+
+  try {
+    // Process topics/zagadnienia - extract clean list
+    var processedTopics = rawTopics;
+    if (rawTopics && rawTopics.length > 500) {
+      var topicsPrompt = 'Wyciągnij z poniższego tekstu WSZYSTKIE zagadnienia egzaminacyjne jako numerowaną listę. ' +
+        'Zachowaj KAŻDE zagadnienie dokładnie tak jak jest napisane. Nic nie pomijaj. Odpowiedz tylko listą, bez komentarzy.\n\n' + rawTopics.slice(0, 8000);
+      processedTopics = await callAnthropicAPI([{ role: 'user', content: topicsPrompt }], null, 2000);
+    }
+
+    // Process materials - extract key concepts and definitions
+    var processedMat = rawMat;
+    if (rawMat && rawMat.length > 500) {
+      var matPrompt = 'Z poniższych materiałów wyciągnij WSZYSTKIE kluczowe pojęcia, definicje, wzory i fakty. ' +
+        'Zachowaj dokładną treść merytoryczną — nic nie wymyślaj, tylko kondensuj to co jest w tekście. ' +
+        'Format: krótkie punkty z najważniejszą treścią. Odpowiedz tylko wyciągniętymi informacjami.\n\n' + rawMat.slice(0, 8000);
+      processedMat = await callAnthropicAPI([{ role: 'user', content: matPrompt }], null, 3000);
+    }
+
+    if (statusEl) { statusEl.textContent = '✓ Materiały przeanalizowane'; statusEl.style.color = 'var(--success)'; }
+    return { mat: processedMat, topics: processedTopics };
+  } catch(e) {
+    if (statusEl) { statusEl.textContent = '⚠️ Analiza nieudana — używam oryginalnych plików'; statusEl.style.color = 'var(--accent)'; }
+    return { mat: rawMat.slice(0, 4000), topics: rawTopics.slice(0, 3000) };
+  }
+}
+
+// ── Navigation ─────────────────────────────────────────────────
+var navLabels = ['', 'Konfiguracja', 'Plan nauki', 'Sesja nauki'];
+function goTo(n) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  document.getElementById('s' + n).classList.add('active');
+  document.getElementById('nav-tag').textContent = navLabels[n];
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Helpers ────────────────────────────────────────────────────
+function getDaysUntil(dateStr) {
+  var now = new Date(); now.setHours(0,0,0,0);
+  var exam = new Date(dateStr); exam.setHours(0,0,0,0);
+  return Math.max(1, Math.round((exam - now) / 86400000));
+}
+
+function updateProgress() {
+  if (!planData) return;
+  var total = planData.days.length;
+  var done = completedDays.size;
+  var pct = total ? Math.round((done / total) * 100) : 0;
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('pct-lbl').textContent = pct + '%';
+  document.getElementById('s-done').textContent = done;
+}
+
+// ── API ────────────────────────────────────────────────────────
+function getApiKey() {
+  return (document.getElementById('api-key-input') || {}).value || localStorage.getItem('eg_apikey') || '';
+}
+
+async function callAnthropicAPI(messages, systemPrompt, maxTokens) {
+  var apiKey = getApiKey();
+  if (!apiKey) throw new Error('Brak klucza API. Wpisz klucz Groq na stronie głównej.');
+  var body = {
+    model: 'llama-3.3-70b-versatile',
+    max_tokens: maxTokens,
+    messages: systemPrompt
+      ? [{ role: 'system', content: systemPrompt }].concat(messages)
+      : messages
+  };
+  var res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey
+    },
+    body: JSON.stringify(body)
+  });
+  var data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.choices[0].message.content;
+}
+
+// ── Generate plan ──────────────────────────────────────────────
+async function generatePlan() {
+  var subject = document.getElementById('subject').value.trim();
+  var examDate = document.getElementById('exam-date').value;
+  var hours = document.getElementById('hours').value.trim();
+  var level = document.getElementById('level').value;
+  var manual = document.getElementById('manual-text').value.trim();
+  var manualTopics = document.getElementById('topics-text').value.trim();
+  var rawMat = fileContent || manual;
+  var rawTopics = topicsContent || manualTopics;
+
+  if (!examDate) { alert('Podaj datę egzaminu!'); return; }
+  if (!subject) { alert('Podaj nazwę przedmiotu!'); return; }
+
+  var btn = document.getElementById('gen-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Analizuję materiały...';
+
+  // Preprocess: let AI extract key concepts from uploaded files
+  var processed = await preprocessContent(rawMat, rawTopics);
+  var matContent = processed.mat ? processed.mat.slice(0, 5000) : '';
+  var topContent = processed.topics ? processed.topics.slice(0, 4000) : '';
+
+  btn.innerHTML = '<span class="spinner"></span> Generuję plan...';
+
+  var days = getDaysUntil(examDate);
+  var numSessions = Math.min(days, 14);
+  var reviewDays = days <= 5 ? 1 : days <= 10 ? 2 : 3;
+  var learnDays = numSessions - reviewDays;
+
+  var promptLines = [
+    'Jesteś ekspertem od efektywnej nauki akademickiej.',
+    'Przedmiot: ' + subject,
+    'Dni do egzaminu: ' + days,
+    'Godziny dziennie: ' + (hours || 'nie podano'),
+    'Poziom: ' + level,
+    topContent ? ('ZAGADNIENIA:\n' + topContent) : '',
+    matContent ? ('MATERIALY:\n' + matContent) : '',
+    (!topContent && !matContent) ? 'Brak materialow - plan ogolny.' : '',
+    '',
+    'ZASADY:',
+    '1. ' + numSessions + ' sesji lacznie. Pierwsze ' + learnDays + ' to nauka (type:learning), ostatnie ' + reviewDays + ' to TYLKO powtorka (type:review).',
+    '2. Max 2-3 tematy dziennie, bloki po 30 min.',
+    '3. Kazdy blok: teoria (~20 min) + test (~10 min).',
+    '4. 100% opanowania - lepiej mniej niz za duzo.',
+    '5. Jezeli sa zagadnienia - uwzgledniej JE w planie.',
+    '',
+    'Odpowiedz TYLKO czystym JSON bez zadnego dodatkowego tekstu:',
+    '{"summary":"strategia","total_topics":5,"days":[{"day":1,"type":"learning","focus":"tytul","blocks":[{"topic":"temat","theory_min":20,"test_min":10}],"topics":["temat"],"time_estimate":"1h","tip":"wskazowka"}]}'
+  ];
+  var prompt = promptLines.filter(function(l) { return l !== ''; }).join('\n');
+
+  try {
+    var text = await callAnthropicAPI([{ role: 'user', content: prompt }], null, 4000);
+    var jsonStart = text.indexOf('{');
+    var jsonEnd = text.lastIndexOf('}');
+    if (jsonStart === -1 || jsonEnd === -1) throw new Error('Brak JSON w odpowiedzi');
+    planData = JSON.parse(text.slice(jsonStart, jsonEnd + 1));
+    planData.subject = subject;
+    planData.examDate = examDate;
+    planData.daysUntil = days;
+    planData.level = level;
+    planData.matContent = matContent;
+    planData.topContent = topContent;
+    completedDays = new Set();
+    saveProgress();
+    renderPlan();
+    goTo(2);
+  } catch(err) {
+    alert('Błąd: ' + err.message + '. Spróbuj ponownie.');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="ti ti-sparkles"></i> Wygeneruj plan nauki';
+  }
+}
+
+// ── Render plan ────────────────────────────────────────────────
+function renderPlan() {
+  document.getElementById('plan-title').textContent = planData.subject + ' — Plan nauki';
+  document.getElementById('plan-summary').textContent = planData.summary;
+  document.getElementById('s-days').textContent = planData.daysUntil;
+  document.getElementById('s-sessions').textContent = planData.days.length;
+  updateProgress();
+
+  var list = document.getElementById('days-list');
+  list.innerHTML = '';
+  planData.days.forEach(function(day, i) {
+    var done = completedDays.has(i);
+    var isReview = day.type === 'review';
+    var el = document.createElement('div');
+    el.className = 'day-card';
+
+    var blocksHtml = (day.blocks || []).map(function(b) {
+      return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:9px 12px;background:var(--bg);border-radius:8px;border:0.5px solid var(--border);">' +
+        '<i class="ti ti-clock" style="color:var(--accent);font-size:15px;flex-shrink:0;"></i>' +
+        '<div style="flex:1;">' +
+          '<div style="font-size:13px;font-weight:500;">' + b.topic + '</div>' +
+          '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' +
+            (b.theory_min > 0 ? '<span style="background:var(--accent-light);color:var(--accent);padding:1px 6px;border-radius:4px;margin-right:4px;">Teoria ' + b.theory_min + ' min</span>' : '') +
+            '<span style="background:var(--success-light);color:var(--success);padding:1px 6px;border-radius:4px;">Test ' + b.test_min + ' min</span>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+
+    var dayNumHtml = done ? '<i class="ti ti-check" style="font-size:14px;"></i>' : String(day.day);
+    var circleClass = done ? 'done-circle' : (isReview ? 'review-circle' : '');
+    var headerClass = done ? 'done-hdr' : '';
+    var badgeClass = done ? 'badge-green' : (isReview ? 'badge-review' : 'badge-orange');
+    var badgeText = done ? '&#10003; Ukończony' : (isReview ? 'Powtórka' : 'Dzień ' + day.day);
+    var metaText = isReview ? '🔁 Dzień powtórkowy' : ((day.blocks ? day.blocks.length : 1) + ' bloki 30 min');
+
+    el.innerHTML =
+      '<div class="day-header ' + headerClass + '" onclick="toggleDay(' + i + ')">' +
+        '<div class="day-left">' +
+          '<div class="day-num-circle ' + circleClass + '">' + dayNumHtml + '</div>' +
+          '<div>' +
+            '<div class="day-focus">' + day.focus + '</div>' +
+            '<div class="day-meta">' + metaText + ' · ' + day.time_estimate + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="day-right">' +
+          '<span class="badge ' + badgeClass + '">' + badgeText + '</span>' +
+          '<button class="btn-sm" onclick="event.stopPropagation();startSession(' + i + ')"><i class="ti ti-player-play"></i> Ucz się</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="day-body" id="body-' + i + '">' +
+        (day.blocks ? blocksHtml : '') +
+        (day.tip ? '<div style="background:var(--accent-light);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--accent);margin-top:6px;"><i class="ti ti-bulb" style="margin-right:5px;"></i>' + day.tip + '</div>' : '') +
+      '</div>';
+    list.appendChild(el);
+  });
+}
+
+function toggleDay(i) {
+  document.getElementById('body-' + i).classList.toggle('open');
+}
+
+// ── Session ────────────────────────────────────────────────────
+function startSession(idx) {
+  currentDay = idx;
+  currentBlockIdx = 0;
+  blockPhase = 'theory';
+  var day = planData.days[idx];
+  var isReview = day.type === 'review';
+
+  document.getElementById('sess-title').textContent = 'Dzień ' + day.day + ': ' + day.focus;
+  document.getElementById('sess-topics').textContent = isReview
+    ? '🔁 Dzień powtórkowy — zero nowego materiału'
+    : (day.topics || []).join(' · ');
+
+  var qb = document.getElementById('quick-btns');
+  var opts = isReview
+    ? ['Zrób mi pełny quiz ze wszystkiego', 'Które tematy są najtrudniejsze?', 'Odpytaj mnie losowo', 'Podaj mi ściągawkę końcową']
+    : ['Powtórz wyjaśnienie prościej', 'Daj przykład z życia', 'Sprawdź czy rozumiem', 'Następny temat'];
+  qb.innerHTML = opts.map(function(t) {
+    return '<button class="quick-btn" onclick="quickSend(\'' + t.replace(/'/g, "\\'") + '\')">' + t + '</button>';
+  }).join('');
+
+  chatHistory = [];
+  document.getElementById('chat-area').innerHTML = '';
+
+  if (isReview) {
+    addMsg('ai', 'Dzień powtórkowy! 🔁 Dziś tylko testy i utrwalanie — zero nowego materiału.<br><br>Zaczynam od quizu z całości. Gotowa?');
+    setTimeout(function() {
+      autoAsk('Zrób kompleksowy quiz z przedmiotu ' + planData.subject + '. Zadaj 5 trudnych pytań jedno po jednym. Zacznij od pytania 1.');
+    }, 500);
+  } else {
+    var blocks = day.blocks || [];
+    var blockList = blocks.map(function(b, i) {
+      return (i+1) + '. ' + b.topic + ' — teoria ' + b.theory_min + ' min + test ' + b.test_min + ' min';
+    }).join('<br>');
+    addMsg('ai', 'Dzień ' + day.day + ' — startujemy! 🎯<br><br>Plan na dziś:<br>' + blockList +
+      (day.tip ? '<br><br><em>💡 ' + day.tip + '</em>' : '') +
+      '<br><br>Zaczynam od: <strong>' + (blocks[0] ? blocks[0].topic : day.focus) + '</strong>');
+    setTimeout(function() { startBlock(0); }, 500);
+  }
+  goTo(3);
+}
+
+function buildSystemPrompt() {
+  var day = planData.days[currentDay];
+  var isReview = day.type === 'review';
+  var blocks = day.blocks || [];
+  var cb = blocks[currentBlockIdx] || {};
+  var lines = [
+    'Jesteś wymagającym tutorem akademickim przygotowującym studentkę do egzaminu z: ' + planData.subject + '.',
+    'Poziom: ' + planData.level + '.',
+    'Sesja: ' + day.focus + '.',
+    isReview
+      ? 'DZIEŃ POWTÓRKOWY — nie wprowadzaj nowego materiału, tylko testuj i utrwalaj.'
+      : 'Blok ' + (currentBlockIdx+1) + '/' + blocks.length + ': ' + (cb.topic || '') + '. Faza: ' + (blockPhase === 'theory' ? 'TEORIA' : 'TEST') + '.',
+    '',
+    'ZASADY:',
+    '- Tłumacz PROSTO z przykładami.',
+    '- Po teorii zapytaj: "Gotowa na test?" — nie przechodź bez zgody.',
+    '- Test: jedno pytanie na raz, oceniaj, drąż niepełne odpowiedzi.',
+    '- 100% opanowania — pytaj o szczegóły i wyjątki.',
+    '- Max 30 min na blok.',
+    '- Po zaliczeniu testu napisz dokładnie: "Blok zaliczony!"',
+    planData.topContent ? ('ZAGADNIENIA EGZAMINACYJNE (ucz DOKŁADNIE tych zagadnień):\n' + planData.topContent) : '',
+    planData.matContent ? ('MATERIAŁY STUDENTA (tłumacz w oparciu o te materiały, nie wymyślaj):\n' + planData.matContent) : '',
+    'Odpowiadaj po polsku. Używaj pogrubień i nowych linii.'
+  ];
+  return lines.filter(function(l) { return l !== ''; }).join('\n');
+}
+
+function startBlock(blockIdx) {
+  var day = planData.days[currentDay];
+  var blocks = day.blocks || [];
+  if (blockIdx >= blocks.length) {
+    addMsg('ai', '<strong>Wszystkie bloki zaliczone!</strong> 🎉<br>Kliknij "Ukończ dzień" żeby zapisać postęp.');
+    return;
+  }
+  currentBlockIdx = blockIdx;
+  blockPhase = 'theory';
+  var block = blocks[blockIdx];
+  autoAsk('Wyjaśnij temat "' + block.topic + '" w ' + block.theory_min + ' minutach. Tłumacz prosto, z przykładami. Na końcu zapytaj: "Gotowa na test?"');
+}
+
+function autoAsk(prompt) {
+  chatHistory.push({ role: 'user', content: prompt });
+  var loading = addMsg('ai', '<em style="color:var(--muted);">Pisze...</em>');
+  loading.classList.add('loading');
+  callChat(loading);
+}
+
+async function callChat(loadingEl) {
+  document.getElementById('send-btn').disabled = true;
+  try {
+    var reply = await callAnthropicAPI(chatHistory, buildSystemPrompt(), 2000);
+    chatHistory.push({ role: 'assistant', content: reply });
+    loadingEl.className = 'msg ai';
+    loadingEl.innerHTML = reply
+      .replace(/\n/g, '<br>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>');
+    if (blockPhase === 'theory' && /gotowa na test/i.test(reply)) blockPhase = 'test';
+    if (blockPhase === 'test' && /blok zaliczony/i.test(reply)) {
+      blockPhase = 'done';
+      setTimeout(function() { startBlock(currentBlockIdx + 1); }, 800);
+    }
+  } catch(err) {
+    loadingEl.className = 'msg ai';
+    loadingEl.innerHTML = '<span style="color:var(--muted);">Błąd: ' + err.message + '. Spróbuj ponownie.</span>';
+  } finally {
+    document.getElementById('send-btn').disabled = false;
+    document.getElementById('chat-area').scrollTop = 99999;
+  }
+}
+
+function quickSend(text) {
+  document.getElementById('chat-input').value = text;
+  sendMessage();
+}
+
+function addMsg(role, html) {
+  var chat = document.getElementById('chat-area');
+  var d = document.createElement('div');
+  d.className = 'msg ' + role;
+  d.innerHTML = html;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+  return d;
+}
+
+async function sendMessage() {
+  var inp = document.getElementById('chat-input');
+  var btn = document.getElementById('send-btn');
+  var text = inp.value.trim();
+  if (!text || btn.disabled) return;
+  inp.value = '';
+  addMsg('user', text);
+  btn.disabled = true;
+  var loading = addMsg('ai', '<em style="color:var(--muted);">Pisze...</em>');
+  loading.classList.add('loading');
+  chatHistory.push({ role: 'user', content: text });
+  await callChat(loading);
+}
+
+document.getElementById('chat-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+
+function markDone() {
+  completedDays.add(currentDay);
+  saveProgress();
+  updateProgress();
+  renderPlan();
+  addMsg('ai', '<strong>Świetna robota!</strong> 🎉 Dzień ' + planData.days[currentDay].day + ' zaliczony!<br><br>Wróć do planu po następną sesję.');
+}
+
+function saveApiKey() {
+  var key = (document.getElementById('api-key-input') || {}).value || '';
+  if (key) {
+    localStorage.setItem('eg_apikey', key);
+    document.getElementById('api-key-status').textContent = '✓ Zapisano';
+    document.getElementById('api-key-status').style.color = 'var(--success)';
+  }
+}
+
+window.addEventListener('load', function() {
+  loadProgress();
+  var saved = localStorage.getItem('eg_apikey');
+  var inp = document.getElementById('api-key-input');
+  if (saved && inp) {
+    inp.value = saved;
+    document.getElementById('api-key-status').textContent = '✓ Zapisano';
+    document.getElementById('api-key-status').style.color = 'var(--success)';
+  }
+});
+</script>
+</body>
+</html>
