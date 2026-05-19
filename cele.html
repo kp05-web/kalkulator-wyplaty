@@ -1,0 +1,987 @@
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+
+<style>
+:root{
+  --bg:#f6f4ef;
+  --surface:#ffffff;
+  --surface-2:#faf8f4;
+  --border:rgba(0,0,0,0.08);
+  --text:#1a1a1a;
+  --muted:#7d7d7d;
+  --accent:#2c5fe6;
+  --accent-bg:#eef2ff;
+  --success:#1a9e6e;
+  --radius:18px;
+  --radius-sm:12px;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+body{
+  background:var(--bg);
+  font-family:'DM Sans',sans-serif;
+  color:var(--text);
+  padding:22px 16px 80px;
+  overflow-x:hidden;
+}
+
+.app{
+  max-width:480px;
+  margin:0 auto;
+}
+
+.hdr{
+  margin-bottom:22px;
+}
+
+.hdr h1{
+  font-size:28px;
+  font-weight:700;
+  letter-spacing:-0.03em;
+  margin-bottom:6px;
+}
+
+.hdr .sub{
+  color:var(--muted);
+  font-size:14px;
+}
+
+.sum-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:24px;
+}
+
+.mc{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:20px;
+  padding:18px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.03);
+}
+
+.mc-l{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+
+.mc-v{
+  font-size:24px;
+  font-weight:700;
+  line-height:1.1;
+}
+
+.mc-v.accent{
+  color:var(--accent);
+}
+
+.sec-l{
+  font-size:12px;
+  font-weight:600;
+  color:var(--muted);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:12px;
+  padding-left:4px;
+}
+
+.goals{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  margin-bottom:20px;
+}
+
+.gc{
+  background:var(--surface);
+  border-radius:24px;
+  padding:20px;
+  border:1px solid var(--border);
+  box-shadow:0 4px 18px rgba(0,0,0,0.04);
+}
+
+.gc.main{
+  border:2px solid var(--accent);
+  background:linear-gradient(to bottom,#ffffff,#f8faff);
+}
+
+.gc-row{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:14px;
+}
+
+.gc-name{
+  font-size:18px;
+  font-weight:700;
+  line-height:1.2;
+}
+
+.badge{
+  background:var(--accent-bg);
+  color:var(--accent);
+  font-size:11px;
+  padding:5px 10px;
+  border-radius:999px;
+  font-weight:600;
+  white-space:nowrap;
+  height:fit-content;
+}
+
+.gc-nums{
+  display:flex;
+  align-items:flex-end;
+  gap:6px;
+  margin-bottom:12px;
+  flex-wrap:wrap;
+}
+
+.gc-saved{
+  font-size:34px;
+  font-weight:700;
+  line-height:1;
+}
+
+.gc-of{
+  font-size:14px;
+  color:var(--muted);
+  margin-bottom:3px;
+}
+
+.bar-w{
+  height:10px;
+  background:#ece8e1;
+  border-radius:999px;
+  overflow:hidden;
+  margin-bottom:14px;
+}
+
+.bar-f{
+  height:100%;
+  border-radius:999px;
+}
+
+.gc-eta{
+  background:var(--surface-2);
+  border-radius:14px;
+  padding:12px 14px;
+  font-size:13px;
+  line-height:1.5;
+  color:#555;
+  margin-bottom:14px;
+}
+
+.gc-btns{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+.btn,
+.btn-add,
+.sh-btn,
+.plan-add-btn{
+  border:none;
+  border-radius:14px;
+  cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  transition:.2s;
+}
+
+.btn{
+  min-height:46px;
+  background:var(--surface-2);
+  color:var(--text);
+  font-size:14px;
+  font-weight:600;
+}
+
+.btn.ok{
+  background:var(--accent);
+  color:white;
+}
+
+.btn-add{
+  width:100%;
+  min-height:58px;
+  background:white;
+  border:2px dashed #d8d2c8;
+  color:#555;
+  font-size:15px;
+  font-weight:600;
+  margin-bottom:20px;
+}
+
+.tip-box{
+  background:#fff7e8;
+  border-radius:18px;
+  padding:16px;
+  font-size:14px;
+  line-height:1.6;
+  margin-bottom:22px;
+}
+
+.hist-item{
+  background:white;
+  border-radius:16px;
+  padding:14px 16px;
+  margin-bottom:10px;
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  border:1px solid var(--border);
+}
+
+.hi-name{
+  font-size:14px;
+  font-weight:700;
+}
+
+.hi-note,
+.hi-date{
+  font-size:12px;
+  color:var(--muted);
+}
+
+.hi-amt{
+  font-size:16px;
+  font-weight:700;
+  color:var(--success);
+}
+
+.overlay-wrap{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:16px;
+  z-index:100;
+}
+
+.overlay-wrap.open{
+  display:flex;
+}
+
+.sheet{
+  width:100%;
+  max-width:460px;
+  max-height:90vh;
+  overflow:auto;
+  background:white;
+  border-radius:28px;
+  padding:24px;
+}
+
+.sheet h3{
+  font-size:22px;
+  margin-bottom:20px;
+}
+
+.fg{
+  margin-bottom:14px;
+}
+
+.fg label{
+  display:block;
+  font-size:12px;
+  font-weight:600;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+
+.fg input,
+.fg select{
+  width:100%;
+  min-height:48px;
+  border:1px solid #ddd7ce;
+  border-radius:14px;
+  padding:12px 14px;
+  font-size:15px;
+  font-family:'DM Sans',sans-serif;
+}
+
+.sh-btns{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin-top:18px;
+}
+
+.sh-btn{
+  min-height:48px;
+  background:#f3f1ed;
+  font-size:14px;
+  font-weight:600;
+}
+
+.sh-btn.ok{
+  background:var(--accent);
+  color:white;
+}
+
+.sh-btn.del{
+  background:#fff0ef;
+  color:#c0392b;
+}
+
+@media(max-width:430px){
+  .sum-grid,
+  .gc-btns,
+  .sh-btns{
+    grid-template-columns:1fr;
+  }
+
+  .gc-saved{
+    font-size:28px;
+  }
+
+  .hdr h1{
+    font-size:24px;
+  }
+}
+
+html{
+  -webkit-text-size-adjust:100%;
+}
+
+body{
+  zoom:1.08;
+}
+
+.app{
+  max-width:540px;
+}
+
+@media(max-width:430px){
+
+  body{
+    padding:26px 20px 100px;
+    zoom:1;
+  }
+
+  .app{
+    max-width:100%;
+  }
+
+  .hdr{
+    margin-bottom:28px;
+  }
+
+  .hdr h1{
+    font-size:34px !important;
+    line-height:1.1;
+  }
+
+  .hdr .sub{
+    font-size:16px !important;
+    margin-top:8px;
+  }
+
+  .sum-grid{
+    gap:14px;
+    margin-bottom:30px;
+  }
+
+  .mc{
+    padding:22px 20px;
+    border-radius:24px;
+  }
+
+  .mc-l{
+    font-size:12px;
+    margin-bottom:8px;
+  }
+
+  .mc-v{
+    font-size:34px !important;
+  }
+
+  .sec-l{
+    font-size:13px;
+    margin-bottom:14px;
+  }
+
+  .gc{
+    padding:24px;
+    border-radius:28px;
+  }
+
+  .gc-name{
+    font-size:24px !important;
+  }
+
+  .gc-saved{
+    font-size:42px !important;
+  }
+
+  .gc-of{
+    font-size:16px !important;
+  }
+
+  .gc-eta{
+    font-size:15px !important;
+    padding:16px;
+    border-radius:18px;
+  }
+
+  .btn,
+  .btn-add{
+    min-height:58px !important;
+    font-size:16px !important;
+    border-radius:18px;
+  }
+
+  .btn-add{
+    margin-top:10px;
+  }
+
+  .hist-item{
+    padding:18px;
+    border-radius:20px;
+  }
+
+  .hi-name{
+    font-size:16px;
+  }
+
+  .hi-note,
+  .hi-date{
+    font-size:13px;
+  }
+
+  .hi-amt{
+    font-size:18px;
+  }
+
+  .sheet{
+    border-radius:32px;
+    padding:26px;
+  }
+
+  .sheet h3{
+    font-size:28px;
+  }
+
+  .fg label{
+    font-size:13px;
+    margin-bottom:8px;
+  }
+
+  .fg input,
+  .fg select{
+    min-height:56px;
+    font-size:17px !important;
+    border-radius:16px;
+  }
+
+  .sh-btn{
+    min-height:56px;
+    font-size:16px !important;
+    border-radius:18px;
+  }
+}
+
+
+/* TRACKER-LIKE MOBILE UI */
+@media(max-width:430px){
+
+  body{
+    padding:28px 18px 90px !important;
+    background:#f5f3ee !important;
+  }
+
+  .app{
+    max-width:100% !important;
+  }
+
+  .hdr{
+    margin-bottom:28px !important;
+  }
+
+  .hdr h1{
+    font-size:2rem !important;
+    line-height:1.1 !important;
+    margin-bottom:8px !important;
+  }
+
+  .hdr .sub{
+    font-size:15px !important;
+    color:#8a8a8a !important;
+  }
+
+  .sum-grid{
+    grid-template-columns:1fr 1fr !important;
+    gap:14px !important;
+    margin-bottom:28px !important;
+  }
+
+  .mc{
+    border-radius:26px !important;
+    padding:22px !important;
+    box-shadow:none !important;
+    border:1px solid rgba(0,0,0,0.06) !important;
+  }
+
+  .mc-l{
+    font-size:11px !important;
+    margin-bottom:8px !important;
+  }
+
+  .mc-v{
+    font-size:2rem !important;
+  }
+
+  .sec-l{
+    font-size:13px !important;
+    margin-bottom:16px !important;
+  }
+
+  .gc{
+    border-radius:32px !important;
+    padding:24px !important;
+    border:1px solid rgba(0,0,0,0.06) !important;
+    box-shadow:none !important;
+  }
+
+  .gc-name{
+    font-size:1.55rem !important;
+    margin-bottom:6px !important;
+  }
+
+  .gc-saved{
+    font-size:3rem !important;
+  }
+
+  .gc-of{
+    font-size:1rem !important;
+  }
+
+  .bar-w{
+    height:12px !important;
+    margin:18px 0 !important;
+  }
+
+  .gc-eta{
+    padding:18px !important;
+    border-radius:20px !important;
+    font-size:15px !important;
+    line-height:1.6 !important;
+    margin-bottom:18px !important;
+  }
+
+  .gc-btns{
+    gap:12px !important;
+  }
+
+  .btn{
+    min-height:60px !important;
+    border-radius:20px !important;
+    font-size:16px !important;
+    font-weight:600 !important;
+  }
+
+  .btn-add{
+    min-height:72px !important;
+    border-radius:24px !important;
+    font-size:17px !important;
+    margin-bottom:26px !important;
+  }
+
+  .tip-box{
+    border-radius:24px !important;
+    padding:20px !important;
+    font-size:15px !important;
+  }
+
+  .hist-item{
+    border-radius:22px !important;
+    padding:18px !important;
+  }
+
+  .hi-name{
+    font-size:16px !important;
+  }
+
+  .hi-amt{
+    font-size:18px !important;
+  }
+
+  .sheet{
+    border-radius:34px !important;
+    padding:28px !important;
+  }
+
+  .sheet h3{
+    font-size:30px !important;
+    margin-bottom:24px !important;
+  }
+
+  .fg label{
+    font-size:13px !important;
+    margin-bottom:8px !important;
+  }
+
+  .fg input,
+  .fg select{
+    min-height:58px !important;
+    border-radius:18px !important;
+    font-size:16px !important;
+  }
+
+  .plan-add-btn,
+  .sh-btn{
+    min-height:58px !important;
+    border-radius:18px !important;
+    font-size:16px !important;
+  }
+}
+
+</style>
+
+<div class="wrapper" id="wrapper">
+<div class="app">
+  <div class="hdr">
+    <h1><i class="ti ti-piggy-bank" aria-hidden="true"></i> Cele oszczędnościowe</h1>
+    <div class="sub" id="sub"></div>
+  </div>
+  <div class="sum-grid" id="sum-grid"></div>
+  <div class="sec-l">Cele</div>
+  <div class="goals" id="goals"></div>
+  <button class="btn-add" onclick="openAdd()"><i class="ti ti-plus" aria-hidden="true"></i> Dodaj nowy cel</button>
+  <div class="tip-box" id="tip-box"></div>
+  <div id="hist-sec"></div>
+</div>
+<div class="overlay-wrap" id="overlay" onclick="bgClick(event)">
+  <div class="sheet"><div id="sheet-body"></div></div>
+</div>
+</div>
+<script>
+const KEY='savings_v4';
+let S={goals:[],deposits:[]};
+const COLORS=['#2c5fe6','#1a9e6e','#d85a30','#9b59b6','#e67e22','#c0392b'];
+
+async function load(){
+  try{const r=await window.storage.get(KEY);if(r&&r.value)S=JSON.parse(r.value);}catch(e){}
+  if(!S.goals)S.goals=[];
+  if(!S.deposits)S.deposits=[];
+  render();
+}
+async function save(){try{await window.storage.set(KEY,JSON.stringify(S));}catch(e){}}
+
+function fm(n){return Math.round(n).toLocaleString('pl-PL');}
+function fd(iso){return new Date(iso).toLocaleDateString('pl-PL',{day:'numeric',month:'short',year:'numeric'});}
+
+
+
+
+function calcETA(g){
+
+  const target = g.target || 0;
+  const saved = g.saved || 0;
+
+  let remaining = Math.max(0, target - saved);
+
+  if(remaining <= 0){
+    return {
+      months:0,
+      date:null,
+      label:'Cel osiągnięty!'
+    };
+  }
+
+  const baseMonthly = g.monthly || 0;
+  const plan = (g.plan || []).filter(p => p.amount > 0 && p.months > 0);
+
+  let totalMonths = 0;
+
+  // Build month-by-month timeline
+  let stagedMonths = 0;
+
+  for(const step of plan){
+
+    for(let i=0; i<step.months; i++){
+
+      if(remaining <= 0) break;
+
+      // during stage month:
+      // use stage amount instead of base
+      remaining -= step.amount;
+
+      totalMonths += 1;
+      stagedMonths += 1;
+    }
+  }
+
+  // AFTER stages -> continue with normal monthly amount
+  if(remaining > 0){
+
+    if(baseMonthly <= 0){
+      return {
+        months:null,
+        date:null,
+        label:'Dodaj miesięczną kwotę'
+      };
+    }
+
+    totalMonths += Math.ceil(remaining / baseMonthly);
+  }
+
+  const d = new Date();
+  d.setMonth(d.getMonth() + totalMonths);
+
+  return {
+    months:totalMonths,
+    date:d,
+    label:`~${totalMonths} mies. (${d.toLocaleDateString('pl-PL',{
+      month:'long',
+      year:'numeric'
+    })})`
+  };
+}
+
+
+
+
+function render(){
+  const ts=S.goals.reduce((s,g)=>s+(g.saved||0),0);
+  const tt=S.goals.reduce((s,g)=>s+(g.target||0),0);
+  const pct=tt>0?Math.round(ts/tt*100):0;
+  const main=S.goals.find(g=>g.isMain)||S.goals[0];
+  const eta=main?calcETA(main):null;
+  document.getElementById('sub').textContent=S.lastUpdated?'Ostatnia wpłata: '+fd(S.lastUpdated):'Dodaj cele i zacznij oszczędzać';
+  document.getElementById('sum-grid').innerHTML=`
+    <div class="mc"><div class="mc-l">Odłożone</div><div class="mc-v accent">${fm(ts)} zł</div></div>
+    <div class="mc"><div class="mc-l">Postęp</div><div class="mc-v">${pct}%</div></div>
+    ${main&&main.target>0?`<div class="mc"><div class="mc-l">Brakuje (gł.)</div><div class="mc-v">${fm(Math.max(0,(main.target||0)-(main.saved||0)))} zł</div></div>`:''}
+    ${eta&&eta.months>0?`<div class="mc"><div class="mc-l">Cel za</div><div class="mc-v">${eta.months} mies.</div></div>`:''}
+  `;
+  let html='';
+  S.goals.forEach((g,i)=>{
+    const col=g.color||COLORS[i%COLORS.length];
+    const p=g.target>0?Math.min(100,Math.round((g.saved||0)/g.target*100)):0;
+    const rem=Math.max(0,(g.target||0)-(g.saved||0));
+    const et=calcETA(g);
+    const planInfo=(g.plan&&g.plan.length>0)?`Etapy specjalne: ${g.plan.length} etap${g.plan.length>1?'y/ów':''}`:g.monthly>0?`Miesięcznie: ${fm(g.monthly)} zł`:'';
+    html+=`<div class="gc ${g.isMain?'main':''}">
+      <div class="gc-row">
+        <div class="gc-name">${g.name}</div>
+        ${g.isMain?'<span class="badge">GŁÓWNY</span>':''}
+      </div>
+      <div class="gc-nums">
+        <span class="gc-saved">${fm(g.saved||0)}</span>
+        <span class="gc-of">zł z ${g.target>0?fm(g.target)+' zł':'—'}</span>
+      </div>
+      ${g.target>0?`<div class="bar-w"><div class="bar-f" style="width:${p}%;background:${col}"></div></div>`:''}
+      <div class="gc-eta">${planInfo?planInfo+'<br>':''}<i class="ti ti-clock" aria-hidden="true"></i> ${et.label}</div>
+      <div class="gc-btns">
+        <button class="btn" onclick="openEdit('${g.id}')"><i class="ti ti-settings" aria-hidden="true"></i> Edytuj</button>
+        <button class="btn ok" onclick="openDeposit('${g.id}')"><i class="ti ti-plus" aria-hidden="true"></i> Wpłać</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('goals').innerHTML=html;
+  renderTip(main);
+  renderHist();
+}
+
+function renderTip(g){
+  const b=document.getElementById('tip-box');
+  if(!g||!g.target){b.style.display='none';return;}
+  const p=(g.saved||0)/g.target;
+  let t='';
+  if(p<0.1)t='Ustaw automatyczny przelew na początku miesiąca — zanim zdążysz wydać.';
+  else if(p<0.5)t='Dobry postęp! Zwiększenie miesięcznej wpłaty o 10% skraca czas o kilka miesięcy.';
+  else if(p<0.9)t='Ponad połowa drogi! Warto już rozejrzeć się po ofertach kredytów hipotecznych.';
+  else if(p<1)t='Prawie jesteś! Ostatni zryw — premie, dodatkowe zlecenia?';
+  else t='Cel osiągnięty! Czas działać — sprawdź oferty mieszkań i kredytów.';
+  b.style.display='block';
+  b.innerHTML='<i class="ti ti-bulb" aria-hidden="true"></i> '+t;
+}
+
+function renderHist(){
+  const sec=document.getElementById('hist-sec');
+  const deps=[...(S.deposits||[])].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
+  if(!deps.length){sec.innerHTML='';return;}
+  let rows=deps.map(d=>{
+    const g=S.goals.find(x=>x.id===d.goalId);
+    return `<div class="hist-item">
+      <div><div class="hi-name">${g?g.name:'—'}</div>${d.note?`<div class="hi-note">${d.note}</div>`:''}</div>
+      <div><div class="hi-amt">+${fm(d.amount)} zł</div><div class="hi-date">${fd(d.date)}</div></div>
+    </div>`;
+  }).join('');
+  sec.innerHTML=`<div class="sec-l" style="margin-top:1.25rem">Ostatnie wpłaty</div>${rows}`;
+}
+
+function openDeposit(gid){
+  const g=S.goals.find(x=>x.id===gid);
+  show(`<h3><i class="ti ti-piggy-bank" aria-hidden="true"></i> Wpłać — ${g.name}</h3>
+    <div class="fg"><label>Kwota (zł)</label><input type="number" inputmode="numeric" id="d-a" value="${g.monthly||''}"></div>
+    <div class="fg"><label>Data</label><input type="date" id="d-d" value="${new Date().toISOString().slice(0,10)}"></div>
+    <div class="fg"><label>Notatka (opcjonalnie)</label><input type="text" id="d-n" placeholder="np. pensja za maj"></div>
+    <div class="sh-btns"><button class="sh-btn" onclick="closeSheet()">Anuluj</button><button class="sh-btn ok" onclick="doDeposit('${gid}')">Zapisz</button></div>`);
+}
+
+function doDeposit(gid){
+  const a=parseFloat(document.getElementById('d-a').value);
+  const dt=document.getElementById('d-d').value;
+  const note=document.getElementById('d-n').value;
+  if(!a||a<=0)return;
+  const g=S.goals.find(x=>x.id===gid);
+  g.saved=(g.saved||0)+a;
+  S.deposits=S.deposits||[];
+  S.deposits.push({goalId:gid,amount:a,date:dt,note});
+  S.lastUpdated=dt;
+  closeSheet();save();render();
+}
+
+let editPlan=[];
+
+function openEdit(gid){
+  const g=S.goals.find(x=>x.id===gid);
+  editPlan=JSON.parse(JSON.stringify(g.plan||[]));
+  renderEditSheet(g);
+}
+
+function renderEditSheet(g){
+  let planHTML=editPlan.map((p,i)=>`
+    <div class="plan-item">
+      <div>
+        <div class="pi-info">${fm(p.amount)} zł / mies.</div>
+        <div class="pi-sub">przez ${p.months} mies. = ${fm(p.amount*p.months)} zł</div>
+      </div>
+      <button class="pi-del" onclick="removePlanStep(${i},'${g.id}')"><i class="ti ti-x" aria-hidden="true"></i></button>
+    </div>`).join('');
+
+  show(`<h3><i class="ti ti-settings" aria-hidden="true"></i> Edytuj cel</h3>
+    <div class="fg"><label>Nazwa</label><input type="text" id="e-nm" value="${g.name}"></div>
+    <div class="fg"><label>Kwota docelowa (zł)</label><input type="number" inputmode="numeric" id="e-tg" value="${g.target||''}"></div>
+    <div class="fg"><label>Już odłożone (zł)</label><input type="number" inputmode="numeric" id="e-sv" value="${g.saved||0}"></div>
+    <div class="fg"><label>Typ</label><select id="e-mn"><option value="no" ${!g.isMain?'selected':''}>Normalny cel</option><option value="yes" ${g.isMain?'selected':''}>Główny cel</option></select></div>
+    <div class="plan-separator"></div>
+    <div class="sec-l">Plan wpłat (etapy)</div>
+    <div class="plan-items" id="plan-items">${planHTML||'<div style="font-size:13px;color:var(--color-text-secondary);padding:4px 0">Brak etapów — dodaj poniżej lub wpisz stałą kwotę</div>'}</div>
+    <div class="plan-add-row">
+      <div class="fg" style="margin:0"><label>Kwota / mies.</label><input type="number" inputmode="numeric" id="p-amt" placeholder="np. 3000"></div>
+      <div class="fg" style="margin:0"><label>Przez ile mies.</label><input type="number" inputmode="numeric" id="p-mo" placeholder="np. 3"></div>
+    </div>
+    <button class="plan-add-btn" onclick="addPlanStep('${g.id}')"><i class="ti ti-plus" aria-hidden="true"></i> Dodaj etap</button>
+    <div class="fg"><label>Stała miesięczna wpłata</label><input type="number" inputmode="numeric" id="e-mo" value="${g.monthly||''}"></div>
+    <div class="sh-btns">
+      <button class="sh-btn del" onclick="doDelete('${g.id}')">Usuń</button>
+      <button class="sh-btn" onclick="closeSheet()">Anuluj</button>
+      <button class="sh-btn ok" onclick="doEdit('${g.id}')">Zapisz</button>
+    </div>`);
+}
+
+function addPlanStep(gid){
+  const amt=parseFloat(document.getElementById('p-amt').value);
+  const mo=parseFloat(document.getElementById('p-mo').value);
+  if(!amt||amt<=0||!mo||mo<=0)return;
+  editPlan.push({amount:amt,months:mo});
+  const g=S.goals.find(x=>x.id===gid);
+  renderEditSheet(g);
+}
+
+function removePlanStep(i,gid){
+  editPlan.splice(i,1);
+  const g=S.goals.find(x=>x.id===gid);
+  renderEditSheet(g);
+}
+
+function doEdit(gid){
+  const g=S.goals.find(x=>x.id===gid);
+  g.name=document.getElementById('e-nm').value.trim()||g.name;
+  g.target=parseFloat(document.getElementById('e-tg').value)||0;
+  g.saved=parseFloat(document.getElementById('e-sv').value)||0;
+  g.monthly=parseFloat(document.getElementById('e-mo').value)||0;
+  g.plan=editPlan.slice();
+  const isMain=document.getElementById('e-mn').value==='yes';
+  if(isMain)S.goals.forEach(x=>x.isMain=false);
+  g.isMain=isMain;
+  closeSheet();save();render();
+}
+
+function doDelete(gid){
+  if(!confirm('Usunąć ten cel?'))return;
+  S.goals=S.goals.filter(g=>g.id!==gid);
+  S.deposits=(S.deposits||[]).filter(d=>d.goalId!==gid);
+  closeSheet();save();render();
+}
+
+function openAdd(){
+  editPlan=[];
+  const col=COLORS[S.goals.length%COLORS.length];
+  show(`<h3><i class="ti ti-target" aria-hidden="true"></i> Nowy cel</h3>
+    <div class="fg"><label>Nazwa</label><input type="text" id="n-nm" placeholder="np. Wkład na mieszkanie"></div>
+    <div class="fg"><label>Kwota docelowa (zł)</label><input type="number" inputmode="numeric" id="n-tg" placeholder="np. 90000"></div>
+    <div class="fg"><label>Już odłożone (zł)</label><input type="number" inputmode="numeric" id="n-sv" value="0"></div>
+    <div class="fg"><label>Typ</label><select id="n-mn"><option value="no">Normalny cel</option><option value="yes">Główny cel</option></select></div>
+    <div class="plan-separator"></div>
+    <div class="sec-l">Plan wpłat (etapy)</div>
+    <div class="plan-items" id="plan-items"><div style="font-size:13px;color:var(--color-text-secondary);padding:4px 0">Brak etapów — dodaj poniżej lub wpisz stałą kwotę</div></div>
+    <div class="plan-add-row">
+      <div class="fg" style="margin:0"><label>Kwota / mies.</label><input type="number" inputmode="numeric" id="p-amt" placeholder="np. 3000"></div>
+      <div class="fg" style="margin:0"><label>Przez ile mies.</label><input type="number" inputmode="numeric" id="p-mo" placeholder="np. 3"></div>
+    </div>
+    <button class="plan-add-btn" onclick="addPlanStepNew()"><i class="ti ti-plus" aria-hidden="true"></i> Dodaj etap</button>
+    <div class="fg"><label>Stała miesięczna wpłata</label><input type="number" inputmode="numeric" id="n-mo" placeholder="np. 2000"></div>
+    <div class="sh-btns"><button class="sh-btn" onclick="closeSheet()">Anuluj</button><button class="sh-btn ok" onclick="doAdd('${col}')">Dodaj cel</button></div>`);
+}
+
+function addPlanStepNew(){
+  const amt=parseFloat(document.getElementById('p-amt').value);
+  const mo=parseFloat(document.getElementById('p-mo').value);
+  if(!amt||amt<=0||!mo||mo<=0)return;
+  editPlan.push({amount:amt,months:mo});
+  let planHTML=editPlan.map((p,i)=>`
+    <div class="plan-item">
+      <div><div class="pi-info">${fm(p.amount)} zł / mies.</div><div class="pi-sub">przez ${p.months} mies. = ${fm(p.amount*p.months)} zł</div></div>
+      <button class="pi-del" onclick="removePlanStepNew(${i})"><i class="ti ti-x" aria-hidden="true"></i></button>
+    </div>`).join('');
+  document.getElementById('plan-items').innerHTML=planHTML;
+  document.getElementById('p-amt').value='';
+  document.getElementById('p-mo').value='';
+}
+
+function removePlanStepNew(i){
+  editPlan.splice(i,1);
+  let planHTML=editPlan.length?editPlan.map((p,i)=>`
+    <div class="plan-item">
+      <div><div class="pi-info">${fm(p.amount)} zł / mies.</div><div class="pi-sub">przez ${p.months} mies. = ${fm(p.amount*p.months)} zł</div></div>
+      <button class="pi-del" onclick="removePlanStepNew(${i})"><i class="ti ti-x" aria-hidden="true"></i></button>
+    </div>`).join(''):'<div style="font-size:13px;color:var(--color-text-secondary);padding:4px 0">Brak etapów</div>';
+  document.getElementById('plan-items').innerHTML=planHTML;
+}
+
+function doAdd(col){
+  const name=document.getElementById('n-nm').value.trim();
+  const target=parseFloat(document.getElementById('n-tg').value)||0;
+  const saved=parseFloat(document.getElementById('n-sv').value)||0;
+  const monthly=parseFloat(document.getElementById('n-mo').value)||0;
+  const isMain=document.getElementById('n-mn').value==='yes';
+  if(!name)return;
+  if(isMain)S.goals.forEach(g=>g.isMain=false);
+  S.goals.push({id:'g'+Date.now(),name,target,saved,monthly,plan:editPlan.slice(),color:col,isMain});
+  closeSheet();save();render();
+}
+
+function show(html){document.getElementById('sheet-body').innerHTML=html;document.getElementById('overlay').classList.add('open');}
+function closeSheet(){document.getElementById('overlay').classList.remove('open');}
+function bgClick(e){if(e.target===document.getElementById('overlay'))closeSheet();}
+
+load();
+</script>
