@@ -1,0 +1,296 @@
+<!DOCTYPE html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#f6f4f0"><meta name="color-scheme" content="light"><title>Finanse</title>
+<style>
+:root{--bg:#f6f4f0;--card:#fff;--tx:#2b2a28;--mu:#7a756d;--ac:#3d6b5c;--bad:#b4533f;--ln:#e7e3dc;--warn:#b98a2e;color-scheme:light}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;max-width:100%;overflow-x:hidden}
+body{background:var(--bg);color:var(--tx);font:16px/1.4 -apple-system,system-ui,sans-serif;padding:env(safe-area-inset-top) 0 0}
+main{padding:12px 14px 130px;max-width:640px;margin:auto}h2{margin:18px 0 8px;font-size:15px;color:var(--mu);font-weight:600}h3{margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:8px}.g .card{margin:0}.l{font-size:12px;color:var(--mu)}.v{font-size:20px;font-weight:650;word-break:break-word}.s{font-size:12px;color:var(--mu)}
+.bad{color:var(--bad)}.ok{color:var(--ac)}.warn{color:var(--warn)}.mu{color:var(--mu)}.row{display:flex;justify-content:space-between;gap:10px;padding:11px 0;border-bottom:1px solid var(--ln);align-items:center}.row:last-child{border:0}.row>div:first-child{min-width:0;overflow-wrap:anywhere}.r{text-align:right;white-space:nowrap;font-weight:600}
+.btn{border:0;background:var(--ac);color:#fff;border-radius:12px;padding:12px 16px;font-size:16px;min-height:44px}.btn.ghost{background:transparent;color:var(--tx);border:1px solid var(--ln)}.btn.bad{background:var(--bad);color:#fff}.btn.sm{padding:6px 12px;min-height:36px;font-size:14px}
+input,select{width:100%;font-size:16px;padding:11px;border-radius:10px;border:1px solid var(--ln);background:var(--bg);color:var(--tx);min-height:44px;margin:3px 0 10px}input[type=checkbox]{width:22px;min-height:22px;height:22px}
+label{font-size:13px;color:var(--mu)}.bar{height:8px;background:var(--ln);border-radius:5px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ac)}.bar i.o{background:var(--bad)}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom)}nav button{flex:1;border:0;background:none;color:var(--mu);padding:8px 0;font-size:9.5px;min-width:0;min-height:50px}nav button.on{color:var(--ac);font-weight:700}nav b{display:block;font-size:19px}
+#fab{position:fixed;right:16px;bottom:calc(70px + env(safe-area-inset-bottom));width:54px;height:54px;border-radius:27px;font-size:28px;padding:0;box-shadow:0 3px 10px #0004}
+#mo{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;justify-content:center;z-index:9}#mo>div{background:var(--card);width:100%;max-width:640px;max-height:92vh;overflow-y:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}.chip{border:1px solid var(--ln);background:none;color:var(--tx);border-radius:20px;padding:8px 12px;font-size:14px}.chip.on{background:var(--ac);color:#fff}
+#toast{position:fixed;top:calc(8px + env(safe-area-inset-top));left:12px;right:12px;z-index:20;background:var(--tx);color:var(--bg);padding:10px 14px;border-radius:12px;display:none}.err{color:var(--bad);font-size:14px;margin-top:8px}.note{font-size:13px;color:var(--mu)}
+</style></head><body><div id="toast"></div><main id="app"><div class="card"><b>Ładowanie aplikacji…</b><div class=note>Jeśli ten napis nie znika, ten podgląd nie uruchamia JavaScriptu (np. podgląd w aplikacji Pliki) — otwórz plik w Safari. Jeśli poniżej pojawi się błąd, przepisz go lub zrób zrzut ekranu.</div><div id="boot" class=err></div></div></main><button class="btn" id="fab" data-act="quick">+</button><nav id="nav"></nav><div id="mo"><div id="mb"></div></div>
+<script>
+'use strict';
+if(typeof window!=='undefined'&&window.addEventListener)window.addEventListener('error',e=>{if(window.__ok)return;const b=document.getElementById('boot');if(b)b.textContent='Błąd: '+(e.message||'nieznany')+(e.lineno?' (linia '+e.lineno+')':'')});
+const APP_VER='1.2.0',SCHEMA=1,KEY='pfm_data_v1';
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,9);
+const toG=s=>{if(typeof s==='number')return Number.isInteger(s)?s:null;const t=String(s).replace(/\s/g,'').replace(',','.');return /^-?\d+(\.\d{1,2})?$/.test(t)?Math.round(parseFloat(t)*100):null};
+const fmt=g=>new Intl.NumberFormat('pl-PL',{style:'currency',currency:'PLN'}).format(g/100);
+const inp=g=>(g/100).toFixed(2).replace('.',',');
+const okDate=s=>/^\d{4}-\d{2}-\d{2}$/.test(s)&&!isNaN(Date.parse(s));
+const pd=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(Date.UTC(a,b-1,c))};
+const fd=d=>d.toISOString().slice(0,10);
+const pad=n=>String(n).padStart(2,'0');
+const todayStr=()=>{const n=new Date();return n.getFullYear()+'-'+pad(n.getMonth()+1)+'-'+pad(n.getDate())};
+const addDays=(s,n)=>{const d=pd(s);d.setUTCDate(d.getUTCDate()+n);return fd(d)};
+const dim=(y,m)=>new Date(Date.UTC(y,m+1,0)).getUTCDate();
+const addMonths=(s,n,anchor)=>{const d=pd(s),t=d.getUTCFullYear()*12+d.getUTCMonth()+n,y=Math.floor(t/12),m=((t%12)+12)%12;return fd(new Date(Date.UTC(y,m,Math.min(anchor||d.getUTCDate(),dim(y,m)))))};
+const nextDue=s=>s.unit==='week'?addDays(s.nextDate,7*s.every):addMonths(s.nextDate,(s.unit==='year'?12:1)*s.every,s.anchor);
+const mkey=(date,st)=>{let[y,m,d]=date.split('-').map(Number);if(d<st){m--;if(m<1){m=12;y--}}return y+'-'+pad(m)};
+const mrange=(key,st)=>{const a=key+'-'+pad(st),n=addMonths(key+'-01',1).slice(0,7);return[a,addDays(n+'-'+pad(st),-1)]};
+const shiftKey=(k,n)=>addMonths(k+'-01',n).slice(0,7);
+const MN=['styczeń','luty','marzec','kwiecień','maj','czerwiec','lipiec','sierpień','wrzesień','październik','listopad','grudzień'];
+const mname=k=>MN[+k.slice(5)-1]+' '+k.slice(0,4);
+const sum=(a,f)=>a.reduce((s,x)=>s+f(x),0);
+
+function defaults(){const c=(name,fav)=>({id:uid(),name,type:'expense',budget:0,fav:!!fav});
+return{settings:{monthStart:1,lastBackup:null,lastAcc:null},accounts:[{id:uid(),name:'Konto bieżące',opening:0},{id:uid(),name:'Gotówka',opening:0}],
+categories:[c('Jedzenie',1),c('Transport',1),c('Subskrypcje'),c('Rachunki'),c('Edukacja'),c('Praca i materiały'),c('Zdrowie'),c('Ubrania i zakupy'),c('Przyjemności',1),c('Podróże'),c('Prezenty'),c('Oszczędności'),c('Inne')],
+sources:['Wypłata z salonu','Dodatkowe zlecenie','Zwrot pieniędzy','Inne'].map(name=>({id:uid(),name,salon:name==='Wypłata z salonu'})),
+envelopes:['Poduszka finansowa','Mieszkanie','Wakacje','Szkolenia'].map(name=>({id:uid(),name,target:0,date:''})),
+tx:[],envMoves:[],obligations:[],subs:[]}}
+
+function validate(o){try{
+ if(!o||o.app!=='pfm'||!o.data)throw Error('To nie jest kopia zapasowa tej aplikacji.');
+ if(!Number.isInteger(o.schema)||o.schema>SCHEMA)throw Error('Kopia pochodzi z nowszej wersji aplikacji.');
+ const d=JSON.parse(JSON.stringify(o.data)),base=defaults();
+ for(const k of['accounts','categories','sources','envelopes','tx','envMoves','obligations','subs'])if(!Array.isArray(d[k]))throw Error('Brak sekcji: '+k);
+ d.settings=Object.assign(base.settings,d.settings||{});
+ if(!(d.settings.monthStart>=1&&d.settings.monthStart<=28))throw Error('Błędny początek miesiąca.');
+ for(const a of d.accounts)if(!a.id||!Number.isInteger(a.opening))throw Error('Błędne konto.');
+ for(const t of d.tx){if(!t.id||!Number.isInteger(t.amount)||!okDate(t.date)||!['expense','income','transfer','adjust'].includes(t.type))throw Error('Błędna transakcja.');if(t.type!=='adjust'&&t.amount<0)throw Error('Ujemna kwota transakcji.');if(t.workPct!=null&&!(Number.isInteger(t.workPct)&&t.workPct>=0&&t.workPct<=100))throw Error('Błędny procent kosztu pracy.')}
+ for(const m of d.envMoves)if(!m.id||!Number.isInteger(m.amount)||!okDate(m.date))throw Error('Błędny ruch koperty.');
+ for(const s of d.subs)if(!s.id||!Number.isInteger(s.amount)||!okDate(s.nextDate)||!(s.every>=1))throw Error('Błędna subskrypcja.');
+ for(const s of d.obligations)if(!s.id||!Number.isInteger(s.amount)||!okDate(s.date))throw Error('Błędne zobowiązanie.');
+ for(const x of d.sources)if(x.salon===undefined)x.salon=/salon/i.test(x.name||'');
+ return{ok:true,data:d}}catch(e){return{ok:false,err:e.message}}}
+
+const L={};
+L.accBal=(D,id,upTo)=>{const a=D.accounts.find(x=>x.id===id);let b=a?a.opening:0;
+ for(const t of D.tx){if(t.status==='planned'||(upTo&&t.date>upTo))continue;
+  if(t.type==='income'&&t.accId===id)b+=t.amount;else if(t.type==='expense'&&t.accId===id)b-=t.amount;else if(t.type==='adjust'&&t.accId===id)b+=t.amount;
+  else if(t.type==='transfer'){if(t.accId===id)b-=t.amount;if(t.toAccId===id)b+=t.amount}}return b};
+L.total=(D,upTo)=>sum(D.accounts,a=>L.accBal(D,a.id,upTo));
+L.envBal=(D,id)=>sum(D.envMoves.filter(m=>m.envId===id),m=>m.amount)-sum(D.tx.filter(t=>t.type==='expense'&&t.status!=='planned'&&t.envId===id),t=>t.amount);
+L.envTotal=D=>sum(D.envelopes,e=>L.envBal(D,e.id));
+L.monthlyCost=s=>Math.round(s.unit==='week'?s.amount*52/12/s.every:s.unit==='month'?s.amount/s.every:s.amount/(12*s.every));
+L.dues=(D,until)=>{const out=[];
+ for(const o of D.obligations)if(o.status==='planned'&&o.date<=until)out.push({kind:'ob',id:o.id,name:o.name,amount:o.amount,date:o.date,envId:o.envId});
+ for(const t of D.tx)if(t.type==='expense'&&t.status==='planned'&&t.date<=until)out.push({kind:'tx',id:t.id,name:t.note||'Planowany wydatek',amount:t.amount,date:t.date,envId:t.envId});
+ for(const s of D.subs){if(!s.active)continue;let d=s.nextDate,n=0;while(d<=until&&n<60){if(s.end&&d>s.end)break;out.push({kind:'sub',id:s.id,name:s.name,amount:s.amount,date:d,envId:s.envId});d=nextDue({...s,nextDate:d});n++}}
+ return out.sort((a,b)=>a.date<b.date?-1:a.date>b.date?1:0)};
+L.summary=(D,T)=>{const total=L.total(D),env=L.envTotal(D),up=sum(L.dues(D,addDays(T,30)).filter(x=>!x.envId),x=>x.amount);
+ return{total,env,upcoming:up,safe:total-env-up}};
+L.forecast=(D,T)=>{const st=D.settings.monthStart,end=mrange(mkey(T,st),st)[1],pay=sum(L.dues(D,end),x=>x.amount),
+ inc=sum(D.tx.filter(t=>t.type==='income'&&t.status==='planned'&&t.date>=T&&t.date<=end),t=>t.amount),total=L.total(D),env=L.envTotal(D);
+ const unsec=sum(L.dues(D,end).filter(x=>!x.envId),x=>x.amount);
+ return{end,pay,inc,cautious:total-pay,withIncome:total-pay+inc,safeCautious:total-env-unsec,safeWith:total-env-unsec+inc}};
+L.pay=(D,kind,id,date,paidOn)=>{
+ if(kind==='tx'){const t=D.tx.find(x=>x.id===id);if(!t||t.status!=='planned')return false;t.status='done';t.date=paidOn;return true}
+ const src=kind==='sub'?D.subs.find(x=>x.id===id):D.obligations.find(x=>x.id===id);if(!src)return false;
+ const dueId=kind+':'+id+':'+date;if(D.tx.some(t=>t.dueId===dueId))return false;
+ if(kind==='ob'&&src.status!=='planned')return false;if(kind==='sub'&&src.nextDate!==date)return false;
+ D.tx.push({id:uid(),type:'expense',amount:src.amount,date:paidOn,catId:src.catId||null,accId:src.accId,envId:src.envId||null,note:src.name,status:'done',dueId,workPct:src.workPct|0});
+ if(kind==='ob')src.status='paid';else src.nextDate=nextDue(src);return true};
+L.stats=(D,a,b)=>{const t=D.tx.filter(x=>x.status!=='planned'&&x.date>=a&&x.date<=b);
+ return{income:sum(t.filter(x=>x.type==='income'),x=>x.amount),expense:sum(t.filter(x=>x.type==='expense'),x=>x.amount),saved:sum(D.envMoves.filter(m=>m.date>=a&&m.date<=b),m=>m.amount)}};
+L.byCat=(D,a,b)=>{const m={};for(const t of D.tx)if(t.type==='expense'&&t.status!=='planned'&&t.date>=a&&t.date<=b)m[t.catId||'']=(m[t.catId||'']||0)+t.amount;return m};
+L.workCost=t=>t.type==='expense'&&t.status!=='planned'&&t.workPct>0?Math.round(t.amount*Math.min(100,t.workPct)/100):0;
+L.work=(D,a,b)=>{const ids=D.sources.filter(x=>x.salon).map(x=>x.id),inR=t=>t.date>=a&&t.date<=b;
+ const salon=sum(D.tx.filter(t=>t.type==='income'&&t.status!=='planned'&&inR(t)&&ids.includes(t.srcId)),t=>t.amount),cost=sum(D.tx.filter(inR),L.workCost);return{salon,cost,net:salon-cost}};
+L.workSeries=(D,key,n,T)=>{const st=D.settings.monthStart,first=D.tx.length?mkey(D.tx.reduce((m,t)=>t.date<m?t.date:m,D.tx[0].date),st):key,ms=[];
+ for(let i=n-1;i>=0;i--){const k=shiftKey(key,-i),[x,y]=mrange(k,st);ms.push({k,...L.work(D,x,y),part:y>=T,has:k>=first,show:k>=first||k===key})}
+ const full=ms.filter(m=>!m.part&&m.has),c=full.length,av=f=>Math.round(sum(full,m=>m[f])/c);
+ return{ms:ms.filter(m=>m.show),n:c,avg:c?{salon:av('salon'),cost:av('cost'),net:av('net')}:null}};
+const API={L,addMonths,mkey,mrange,toG,validate,defaults,addDays,nextDue,shiftKey,mname,todayStr};
+if(typeof module!=='undefined')module.exports=API;
+
+if(typeof document!=='undefined'){
+let D,UI={tab:'home',month:null,f:{q:'',type:'',cat:'',acc:'',from:'',to:'',sort:'dd'},sf:'',st:''},M=null,lockT=0;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const T=()=>todayStr(),cname=id=>(D.categories.find(c=>c.id===id)||{name:'Bez kategorii'}).name,aname=id=>(D.accounts.find(c=>c.id===id)||{name:'?'}).name;
+const fdp=s=>s.split('-').reverse().join('.');
+function toast(m,c){const e=$('#toast');e.textContent=m;e.style.display='block';e.style.background=c==='err'?'var(--bad)':'';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',c==='err'?6000:2200)}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify({app:'pfm',appVersion:APP_VER,schema:SCHEMA,data:D}));return true}catch(e){toast('Zapis nie powiódł się: '+e.message+'. Zrób kopię zapasową!','err');return false}}
+function load(){let r=null;try{r=localStorage.getItem(KEY)}catch(e){}
+ if(!r){D=defaults();return}
+ try{const v=validate(JSON.parse(r));if(!v.ok)throw Error(v.err);D=v.data}catch(e){try{localStorage.setItem(KEY+'_corrupt',r)}catch(x){}D=defaults();toast('Zapisane dane są uszkodzone (kopia surowa zachowana). Zaimportuj kopię JSON.','err')}}
+const commit=()=>{persist();render()};
+const lock=()=>{if(Date.now()-lockT<500)return true;lockT=Date.now();return false};
+function modal(h){$('#mb').innerHTML=h;$('#mo').style.display='flex'}
+function close(){$('#mo').style.display='none';M=null}
+function ask(msg,fn,label){M={ask:fn};modal(`<h3>${esc(msg)}</h3><div class=btns><button class="btn bad" data-act=yes>${label||'Potwierdzam'}</button><button class="btn ghost" data-act=close>Anuluj</button></div>`)}
+function fld(f){const v=f.v==null?'':f.v,id='f_'+f.k;let i;
+ if(f.t==='sel')i=`<select id=${id} ${f.re?'data-re=1':''}>${f.o.map(o=>`<option value="${esc(o[0])}" ${o[0]===v?'selected':''}>${esc(o[1])}</option>`).join('')}</select>`;
+ else if(f.t==='chk')i=`<input type=checkbox id=${id} ${v?'checked':''}>`;
+ else i=`<input id=${id} type="${f.t==='date'?'date':f.t==='num'?'number':'text'}" ${f.t==='money'?'inputmode=decimal':''} ${f.t==='num'?'min='+(f.min==null?1:f.min)+(f.mx?' max='+f.mx:'')+' step=1 inputmode=numeric':''} value="${esc(v)}" ${f.max?'maxlength='+f.max:''}>`;
+ return `<label for=${id}>${f.l}</label>${i}`}
+function readVals(fs){const o={};for(const f of fs){const e=$('#f_'+f.k);if(e)o[f.k]=f.t==='chk'?e.checked:e.value}return o}
+function form(title,build,onSave,del,vals){const fs=build(vals||{});M={fs,build,onSave,del};
+ modal(`<h3>${esc(title)}</h3>${fs.map(fld).join('')}<div class=btns><button class=btn data-act=save>Zapisz</button>${del?'<button class="btn bad" data-act=del>Usuń</button>':''}<button class="btn ghost" data-act=close>Anuluj</button></div><div class=err id=err></div>`);M.title=title}
+const opts=(a,none)=>(none?[['',none]]:[]).concat(a.map(x=>[x.id,x.name]));
+const WPF=x=>({k:'workPct',l:'Koszt pracy: % kwoty (0 = nie, 100 = cała)',t:'num',min:0,mx:100,v:x||0});
+const money=(v,allowZero)=>{const g=toG(v);return g===null||g<0||(!allowZero&&g===0)?null:g};
+
+/* ---- transakcje ---- */
+function txForm(t,preset){const isNew=!t||!t.id;t=Object.assign({type:'expense',date:T(),accId:D.settings.lastAcc||D.accounts[0]?.id,status:'done'},t||{},preset||{});
+ const v0=Object.assign({},t,{amount:t.amount!=null?inp(t.amount):'',planned:t.status==='planned'});
+ form(isNew?'Nowa transakcja':'Edytuj transakcję',v=>{v=Object.assign({},v0,v);const ty=v.type;
+  const fs=[{k:'type',l:'Rodzaj',t:'sel',re:1,v:ty,o:[['expense','Wydatek'],['income','Dochód'],['transfer','Transfer między kontami']]},{k:'amount',l:'Kwota (zł)',t:'money',v:v.amount},{k:'date',l:'Data',t:'date',v:v.date}];
+  if(ty==='income')fs.push({k:'srcId',l:'Źródło dochodu',t:'sel',o:opts(D.sources,'— brak —'),v:v.srcId});
+  if(ty!=='transfer')fs.push({k:'catId',l:'Kategoria',t:'sel',o:opts(D.categories,'— brak —'),v:v.catId});
+  fs.push({k:'accId',l:ty==='transfer'?'Z konta':'Konto',t:'sel',o:opts(D.accounts),v:v.accId});
+  if(ty==='transfer')fs.push({k:'toAccId',l:'Na konto',t:'sel',o:opts(D.accounts),v:v.toAccId});
+  if(ty==='expense')fs.push({k:'envId',l:'Opłać z koperty (opcjonalnie)',t:'sel',o:opts(D.envelopes,'— nie —'),v:v.envId},WPF(v.workPct));
+  fs.push({k:'note',l:'Opis',t:'text',v:v.note,max:120},{k:'planned',l:'Planowana (jeszcze niezrealizowana)',t:'chk',v:v.planned});return fs},
+ v=>{const a=money(v.amount);if(a===null)return'Podaj poprawną kwotę większą od 0.';const wp=v.type==='expense'?parseInt(v.workPct||'0',10):0;if(!(wp>=0&&wp<=100))return'Koszt pracy: podaj 0–100%.';if(!okDate(v.date))return'Podaj datę.';if(!D.accounts.some(x=>x.id===v.accId))return'Wybierz konto.';
+  if(v.type==='transfer'&&(v.accId===v.toAccId||!v.toAccId))return'Wybierz dwa różne konta.';
+  if(v.type==='expense'&&v.envId&&!v.planned&&L.envBal(D,v.envId)+(t.envId===v.envId&&t.status!=='planned'?t.amount:0)<a)return'W kopercie jest za mało środków.';
+  const n={id:t.id||uid(),type:v.type,amount:a,date:v.date,catId:v.catId||null,srcId:v.srcId||null,accId:v.accId,toAccId:v.type==='transfer'?v.toAccId:null,envId:v.type==='expense'&&v.envId?v.envId:null,note:v.note.trim(),status:v.planned?'planned':'done',dueId:t.dueId,workPct:wp||0};
+  const i=D.tx.findIndex(x=>x.id===n.id);if(i>=0)D.tx[i]=n;else D.tx.push(n);D.settings.lastAcc=v.accId;return null},
+ isNew?null:()=>{D.tx=D.tx.filter(x=>x.id!==t.id)},v0)}
+function quick(){const used=[...D.tx].filter(t=>t.type==='expense'&&t.catId).sort((a,b)=>a.date<b.date?1:-1).map(t=>t.catId);
+ const ids=[...new Set([...D.categories.filter(c=>c.fav).map(c=>c.id),...used.slice(0,30),...D.categories.map(c=>c.id)])].slice(0,14);
+ M={quick:{cat:ids[0]||''}};
+ modal(`<h3>Szybki wydatek</h3><label>Kwota (zł)</label><input id=qa inputmode=decimal placeholder="0,00" autofocus><div class=chips>${ids.map((id,i)=>`<button class="chip ${i?'':'on'}" data-act=qcat data-id=${id}>${esc(cname(id))}</button>`).join('')}</div><label>Konto</label><select id=qacc>${opts(D.accounts).map(o=>`<option value=${o[0]} ${o[0]===D.settings.lastAcc?'selected':''}>${esc(o[1])}</option>`).join('')}</select><div class=btns><button class=btn data-act=qsave>Zapisz</button><button class="btn ghost" data-act=full>Pełny formularz</button><button class="btn ghost" data-act=close>Anuluj</button></div><div class=err id=err></div>`)}
+function txRow(t){const sign=t.type==='income'?'+':t.type==='expense'?'−':t.type==='adjust'?(t.amount<0?'−':'+'):'',cls=t.type==='income'||(t.type==='adjust'&&t.amount>0)?'ok':'';
+ const sub=t.type==='transfer'?aname(t.accId)+' → '+aname(t.toAccId):t.type==='adjust'?'Korekta salda · '+aname(t.accId):t.type==='income'?(D.sources.find(s=>s.id===t.srcId)?.name||'Dochód')+' · '+aname(t.accId):cname(t.catId)+' · '+aname(t.accId);
+ return `<div class=row><div data-act=edittx data-id=${t.id}><div>${esc(t.note||sub)}</div><div class=s>${fdp(t.date)} · ${esc(sub)}${t.status==='planned'?' · <b class=warn>planowana</b>':''}${t.type==='expense'&&t.workPct>0?' · praca '+t.workPct+'%':''}</div></div><div class="r ${cls}">${sign}${fmt(Math.abs(t.amount))}${t.type==='expense'||t.type==='income'?`<div><button class="btn ghost sm" data-act=repeat data-id=${t.id}>↻</button></div>`:''}</div></div>`}
+function Tx(){const f=UI.f;let a=D.tx.filter(t=>(!f.type||t.type===f.type)&&(!f.cat||t.catId===f.cat)&&(!f.acc||t.accId===f.acc||t.toAccId===f.acc)&&(!f.from||t.date>=f.from)&&(!f.to||t.date<=f.to)&&(!f.q||(t.note||'').toLowerCase().includes(f.q.toLowerCase())));
+ a.sort((x,y)=>f.sort==='da'?(x.date<y.date?-1:1):f.sort==='ad'?y.amount-x.amount:f.sort==='aa'?x.amount-y.amount:(x.date<y.date?1:x.date>y.date?-1:0));
+ const so=(k,l,o)=>`<select data-flt=${k}>${o.map(x=>`<option value="${esc(x[0])}" ${x[0]===f[k]?'selected':''}>${esc(x[1])}</option>`).join('')}</select>`;
+ return `<div class=btns><button class=btn data-act=newtx>+ Pełny formularz</button></div><div class=card style="margin-top:10px"><input data-flt=q placeholder="Szukaj w opisach" value="${esc(f.q)}"><div class=g>${so('type','',[['','Wszystkie rodzaje'],['expense','Wydatki'],['income','Dochody'],['transfer','Transfery'],['adjust','Korekty']])}${so('sort','',[['dd','Najnowsze'],['da','Najstarsze'],['ad','Kwota malejąco'],['aa','Kwota rosnąco']])}${so('cat','',opts(D.categories,'Wszystkie kategorie'))}${so('acc','',opts(D.accounts,'Wszystkie konta'))}<div><label>Od</label><input type=date data-flt=from value="${f.from}"></div><div><label>Do</label><input type=date data-flt=to value="${f.to}"></div></div></div><div class=card>${a.length?a.slice(0,300).map(txRow).join(''):'<div class=mu>Brak transakcji dla tych filtrów.</div>'}</div>`}
+
+/* ---- start ---- */
+const kc=(l,v,c,s)=>`<div class=card><div class=l>${l}</div><div class="v ${c||''}">${v}</div>${s?`<div class=s>${s}</div>`:''}</div>`;
+const dueRow=x=>{const od=x.date<=T();return `<div class=row><div><div>${esc(x.name)}</div><div class=s>${fdp(x.date)} · ${od?'<b class=warn>wymagalna</b>':'planowana'}${x.envId?' · z koperty':''}</div></div><div class=r>${fmt(x.amount)}<div><button class="btn ghost sm" data-act=pay data-kind=${x.kind} data-id=${x.id} data-date=${x.date}>Opłać</button></div></div></div>`};
+function mnav(){const cur=mkey(T(),D.settings.monthStart),k=UI.month||cur;return `<div class=row style="gap:6px"><button class="btn ghost sm" data-act=mon data-n=-1>‹</button><div style="flex:1;text-align:center"><b>${mname(k)}${k===cur?' (trwa)':k>cur?' (przyszły)':''}</b><input type=month data-mp=1 value="${k}" style="margin:4px 0 0;text-align:center"></div><button class="btn ghost sm" data-act=mon data-n=1>›</button></div>${k!==cur?'<div class=btns style="margin:0 0 8px"><button class="btn ghost sm" data-act=curmon>↩ Bieżący miesiąc</button></div>':''}`}
+function Home(){const t=T(),st=D.settings.monthStart,cur=mkey(t,st),key=UI.month||cur,[a,b]=mrange(key,st),ms=L.stats(D,a,b),S=L.summary(D,t),F=L.forecast(D,t);
+ const w=[];if(S.total<0)w.push('Saldo rzeczywiste jest ujemne: '+fmt(S.total));if(S.safe<0)w.push('Brakuje '+fmt(-S.safe)+' na koperty i płatności z najbliższych 30 dni.');
+ const d7=L.dues(D,addDays(t,7));if(d7.length)w.push('W ciągu 7 dni do zapłaty: '+fmt(sum(d7,x=>x.amount))+' ('+d7.length+').');
+ const bk=D.tx.length&&(!D.settings.lastBackup||Date.now()-D.settings.lastBackup>14*864e5)?`<div class="card warn">Dawno nie robiono kopii zapasowej. Dane są tylko w tej przeglądarce — wyeksportuj JSON w Ustawieniach.</div>`:'';
+ return `${bk}${mnav()}${key!==cur?`<div class=card><b>${mname(key)}</b><div class=s>Dochody, wydatki i odłożone dotyczą tego miesiąca. Saldo, bezpieczna kwota, prognoza i płatności pokazują stan na dziś.</div></div>`:''}<div class=g>${kc('Saldo rzeczywiste',fmt(S.total),S.total<0?'bad':'',key<cur?'koniec '+mname(key)+': '+fmt(L.total(D,b)):'stan na dziś')}${kc('Dochody',fmt(ms.income),'ok',b>=t?'miesiąc niepełny':'')}${kc('Wydatki',fmt(ms.expense),'',b>=t?'miesiąc niepełny':'')}${kc('Odłożone w miesiącu',fmt(ms.saved),'ok','wpłaty do kopert')}</div>
+ ${w.map(x=>`<div class="card warn" style="margin-top:8px">⚠ ${esc(x)}</div>`).join('')}
+ <h2>Ile mogę bezpiecznie wydać</h2><div class=card><div class=row><span>Saldo rzeczywiste</span><b>${fmt(S.total)}</b></div><div class=row><span>− przypisane do kopert</span><b>${fmt(S.env)}</b></div><div class=row><span>− płatności w 30 dni (niezabezpieczone kopertą)</span><b>${fmt(S.upcoming)}</b></div><div class=row><b>= Bezpieczna kwota</b><b class="${S.safe<0?'bad':'ok'}">${fmt(S.safe)}</b></div><div class=note>Nie uwzględnia żadnych przyszłych wpływów. Płatność opłacana z koperty nie jest odejmowana drugi raz.</div></div>
+ <h2>Prognoza do ${fdp(F.end)} (szacunek)</h2><div class=card><div class=row><span>Zaplanowane płatności do końca miesiąca</span><b>${fmt(F.pay)}</b></div><div class=row><span>Saldo na koniec — ostrożnie (bez nowych wpływów)</span><b class="${F.cautious<0?'bad':''}">${fmt(F.cautious)}</b></div>${F.inc?`<div class=row><span>Potwierdzone planowane wpływy</span><b>${fmt(F.inc)}</b></div><div class=row><span>Saldo na koniec z potwierdzonymi wpływami</span><b>${fmt(F.withIncome)}</b></div>`:''}<div class=row><span>Bezpieczna kwota na koniec (ostrożnie)</span><b class="${F.safeCautious<0?'bad':''}">${fmt(F.safeCautious)}</b></div><div class=row><span>Mogę ewentualnie odłożyć</span><b>${fmt(Math.max(0,F.safeCautious))}</b></div><div class=note>To szacunek, nie pewnik. Niepotwierdzone dochody nie są wliczane.</div></div>
+ <h2>Najbliższe płatności (30 dni)</h2><div class=card>${(x=>x.length?x.slice(0,6).map(dueRow).join(''):'<div class=mu>Brak nadchodzących płatności.</div>')(L.dues(D,addDays(t,30)))}</div>
+ <h2>Transakcje: ${mname(key)}</h2><div class=card>${(l=>l.length?l.sort((x,y)=>x.date<y.date?1:-1).slice(0,6).map(txRow).join(''):'<div class=mu>Brak transakcji w tym miesiącu.</div>')(D.tx.filter(x=>x.date>=a&&x.date<=b))}<div class=btns><button class="btn ghost sm" data-act=txmonth>Wszystkie z tego miesiąca</button></div></div>`}
+
+/* ---- plan ---- */
+function subForm(s){const n=!s;s=s||{every:1,unit:'month',nextDate:T(),active:true,accId:D.accounts[0]?.id};
+ form(n?'Nowa subskrypcja':'Edytuj subskrypcję',()=>[{k:'name',l:'Nazwa',t:'text',v:s.name,max:60},{k:'amount',l:'Kwota (zł)',t:'money',v:s.amount!=null?inp(s.amount):''},{k:'every',l:'Co ile',t:'num',v:s.every},{k:'unit',l:'Jednostka',t:'sel',v:s.unit,o:[['week','tygodni'],['month','miesięcy'],['year','lat']]},{k:'nextDate',l:'Następna płatność',t:'date',v:s.nextDate},{k:'catId',l:'Kategoria',t:'sel',o:opts(D.categories,'— brak —'),v:s.catId},{k:'accId',l:'Konto',t:'sel',o:opts(D.accounts),v:s.accId},{k:'envId',l:'Zabezpieczone kopertą',t:'sel',o:opts(D.envelopes,'— nie —'),v:s.envId},{k:'end',l:'Koniec obowiązywania (opcjonalnie)',t:'date',v:s.end},{k:'note',l:'Odnowienie / anulowanie (notatka)',t:'text',v:s.note,max:120},WPF(s.workPct),{k:'active',l:'Aktywna',t:'chk',v:s.active}],
+ v=>{const a=money(v.amount);if(!v.name.trim())return'Podaj nazwę.';if(a===null)return'Podaj poprawną kwotę.';const e=parseInt(v.every,10);if(!(e>=1))return'Interwał musi być ≥ 1.';if(!okDate(v.nextDate))return'Podaj datę.';const wp=parseInt(v.workPct||'0',10);if(!(wp>=0&&wp<=100))return'Koszt pracy: podaj 0–100%.';
+  const o={id:s.id||uid(),name:v.name.trim(),amount:a,every:e,unit:v.unit,nextDate:v.nextDate,anchor:+v.nextDate.slice(8),catId:v.catId||null,accId:v.accId,envId:v.envId||null,end:v.end||'',note:v.note.trim(),active:v.active,workPct:wp};
+  const i=D.subs.findIndex(x=>x.id===o.id);if(i>=0)D.subs[i]=o;else D.subs.push(o);return null},n?null:()=>{D.subs=D.subs.filter(x=>x.id!==s.id)})}
+function obForm(s){const n=!s;s=s||{date:T(),status:'planned',accId:D.accounts[0]?.id};
+ form(n?'Nowe zobowiązanie':'Edytuj zobowiązanie',()=>[{k:'name',l:'Nazwa',t:'text',v:s.name,max:60},{k:'amount',l:'Kwota (zł)',t:'money',v:s.amount!=null?inp(s.amount):''},{k:'date',l:'Termin',t:'date',v:s.date},{k:'catId',l:'Kategoria',t:'sel',o:opts(D.categories,'— brak —'),v:s.catId},{k:'accId',l:'Konto',t:'sel',o:opts(D.accounts),v:s.accId},{k:'envId',l:'Zabezpieczone kopertą',t:'sel',o:opts(D.envelopes,'— nie —'),v:s.envId},{k:'status',l:'Status',t:'sel',v:s.status,o:s.status==='paid'?[['paid','opłacone']]:[['planned','planowane'],['cancelled','anulowane']]},{k:'note',l:'Opis',t:'text',v:s.note,max:120},WPF(s.workPct)],
+ v=>{const a=money(v.amount);if(!v.name.trim())return'Podaj nazwę.';if(a===null)return'Podaj poprawną kwotę.';if(!okDate(v.date))return'Podaj termin.';const wp=parseInt(v.workPct||'0',10);if(!(wp>=0&&wp<=100))return'Koszt pracy: podaj 0–100%.';
+  const o={id:s.id||uid(),name:v.name.trim(),amount:a,date:v.date,catId:v.catId||null,accId:v.accId,envId:v.envId||null,status:v.status,note:v.note.trim(),workPct:wp};
+  const i=D.obligations.findIndex(x=>x.id===o.id);if(i>=0)D.obligations[i]=o;else D.obligations.push(o);return null},n?null:()=>{D.obligations=D.obligations.filter(x=>x.id!==s.id)})}
+function Plan(){const t=T(),act=D.subs.filter(s=>s.active),mo=sum(act,L.monthlyCost),d=n=>fmt(sum(L.dues(D,addDays(t,n)),x=>x.amount));
+ return `<div class=g>${kc('Potrzeba w 7 dni',d(7))}${kc('W 14 dni',d(14))}${kc('W 30 dni',d(30))}${kc('Subskrypcje / mies.',fmt(mo),'',fmt(mo*12)+' rocznie (przeliczenie)')}</div>
+ <h2>Do zapłacenia (30 dni)</h2><div class=card>${(x=>x.length?x.map(dueRow).join(''):'<div class=mu>Nic do zapłaty w 30 dni.</div>')(L.dues(D,addDays(t,30)))}</div>
+ <h2>Subskrypcje i cykliczne</h2><div class=btns style="margin:0 0 8px"><button class="btn sm" data-act=newsub>+ Subskrypcja</button></div><div class=card>${D.subs.length?D.subs.map(s=>`<div class=row data-act=editsub data-id=${s.id}><div><div>${esc(s.name)}${s.active?'':' <span class=mu>(wstrzymana)</span>'}</div><div class=s>co ${s.every} ${{week:'tyg.',month:'mies.',year:'lat'}[s.unit]} · następna ${fdp(s.nextDate)} · ${esc(cname(s.catId))}${s.note?' · '+esc(s.note):''}</div></div><div class=r>${fmt(s.amount)}<div class=s>${fmt(L.monthlyCost(s))}/mies.</div></div></div>`).join(''):'<div class=mu>Brak subskrypcji.</div>'}</div>
+ <h2>Zobowiązania i przyszłe wydatki</h2><div class=btns style="margin:0 0 8px"><button class="btn sm" data-act=newob>+ Zobowiązanie</button></div><div class=card>${D.obligations.length?[...D.obligations].sort((a,b)=>a.date<b.date?-1:1).map(o=>`<div class=row data-act=editob data-id=${o.id}><div><div class="${o.status!=='planned'?'mu':''}">${esc(o.name)}</div><div class=s>${fdp(o.date)} · ${o.status==='paid'?'opłacone':o.status==='cancelled'?'anulowane':o.date<=t?'wymagalne':'planowane'} · ${esc(cname(o.catId))}</div></div><div class=r>${fmt(o.amount)}</div></div>`).join(''):'<div class=mu>Brak zobowiązań.</div>'}</div>`}
+
+/* ---- koperty ---- */
+function envForm(e){const n=!e;e=e||{};form(n?'Nowa koperta':'Edytuj kopertę',()=>[{k:'name',l:'Nazwa',t:'text',v:e.name,max:50},{k:'target',l:'Cel (zł, opcjonalnie)',t:'money',v:e.target?inp(e.target):''},{k:'date',l:'Data realizacji (opcjonalnie)',t:'date',v:e.date}],
+ v=>{if(!v.name.trim())return'Podaj nazwę.';const tg=v.target.trim()?money(v.target):0;if(tg===null)return'Błędna kwota celu.';const o={id:e.id||uid(),name:v.name.trim(),target:tg,date:v.date||''};const i=D.envelopes.findIndex(x=>x.id===o.id);if(i>=0)D.envelopes[i]=o;else D.envelopes.push(o);return null},
+ n?null:()=>{const id=e.id;D.envelopes=D.envelopes.filter(x=>x.id!==id);D.envMoves=D.envMoves.filter(m=>m.envId!==id);for(const t of D.tx)if(t.envId===id)t.envId=null;for(const l of[D.obligations,D.subs])for(const x of l)if(x.envId===id)x.envId=null})}
+function moveForm(eid){form('Ruch w kopercie',v=>{const f=[{k:'kind',l:'Operacja',t:'sel',re:1,v:v.kind||'in',o:[['in','Wpłać do koperty (z wolnych środków)'],['out','Wypłać do wolnych środków'],['move','Przenieś do innej koperty']]},{k:'amount',l:'Kwota (zł)',t:'money',v:v.amount},{k:'date',l:'Data',t:'date',v:v.date||T()}];
+ if((v.kind||'in')==='move')f.push({k:'to',l:'Do koperty',t:'sel',o:opts(D.envelopes.filter(e=>e.id!==eid)),v:v.to});f.push({k:'note',l:'Opis',t:'text',v:v.note,max:100});return f},
+ v=>{const a=money(v.amount);if(a===null)return'Podaj poprawną kwotę.';if(!okDate(v.date))return'Podaj datę.';const b=L.envBal(D,eid),pair=uid();
+  if(v.kind!=='in'&&a>b)return'W kopercie jest tylko '+fmt(b)+'.';
+  if(v.kind==='move'){if(!v.to)return'Wybierz kopertę.';D.envMoves.push({id:uid(),pair,envId:eid,amount:-a,date:v.date,note:v.note||'Przeniesienie'},{id:uid(),pair,envId:v.to,amount:a,date:v.date,note:v.note||'Przeniesienie'})}
+  else D.envMoves.push({id:uid(),envId:eid,amount:v.kind==='in'?a:-a,date:v.date,note:v.note});return null})}
+function envDetail(id){const e=D.envelopes.find(x=>x.id===id);if(!e)return close();const b=L.envBal(D,id);
+ const h=[...D.envMoves.filter(m=>m.envId===id).map(m=>({d:m.date,n:m.note||(m.amount>0?'Wpłata':'Wypłata'),a:m.amount,mv:m.id})),...D.tx.filter(t=>t.type==='expense'&&t.status!=='planned'&&t.envId===id).map(t=>({d:t.date,n:'Wydatek: '+(t.note||cname(t.catId)),a:-t.amount}))].sort((x,y)=>x.d<y.d?1:-1);
+ M={env:id};modal(`<h3>${esc(e.name)}</h3><div class=v>${fmt(b)}</div>${e.target?`<div class=s>cel ${fmt(e.target)}${e.date?' do '+fdp(e.date):''}</div>`:''}<div class=btns><button class="btn sm" data-act=emove data-id=${id}>Wpłać / wypłać / przenieś</button><button class="btn ghost sm" data-act=editenv data-id=${id}>Edytuj</button><button class="btn ghost sm" data-act=close>Zamknij</button></div><h2>Historia</h2>${h.length?h.map(x=>`<div class=row><div ${x.mv?`data-act=delmove data-id=${x.mv}`:''}><div>${esc(x.n)}</div><div class=s>${fdp(x.d)}${x.mv?' · dotknij, aby usunąć':''}</div></div><div class="r ${x.a>0?'ok':''}">${x.a>0?'+':'−'}${fmt(Math.abs(x.a))}</div></div>`).join(''):'<div class=mu>Brak ruchów.</div>'}`)}
+function Env(){const S=L.summary(D,T());return `<div class=g>${kc('W kopertach',fmt(S.env))}${kc('Wolne (saldo − koperty)',fmt(S.total-S.env),S.total-S.env<0?'bad':'')}</div><div class=btns style="margin:10px 0"><button class=btn data-act=newenv>+ Koperta</button></div>${D.envelopes.length?D.envelopes.map(e=>{const b=L.envBal(D,e.id),p=e.target?Math.max(0,Math.min(100,Math.round(b/e.target*100))):0;return `<div class=card data-act=envd data-id=${e.id}><div class=row style="border:0;padding:0"><b>${esc(e.name)}</b><b>${fmt(b)}</b></div>${e.target?`<div class=bar><i style="width:${p}%"></i></div><div class=s>${p}% z ${fmt(e.target)}${e.date?' · do '+fdp(e.date):''}</div>`:''}</div>`}).join(''):'<div class="card mu">Brak kopert.</div>'}${S.env>S.total?'<div class="card warn">Suma kopert przekracza saldo kont.</div>':''}`}
+
+/* ---- analizy ---- */
+function Stats(){const t=T(),st=D.settings.monthStart,cur=mkey(t,st),key=UI.month||cur,[a0,b0]=mrange(key,st),a=UI.sf||a0,b=UI.st||b0;
+ const ms=[];for(let i=5;i>=0;i--){const k=shiftKey(key,-i),[x,y]=mrange(k,st);ms.push({k,...L.stats(D,x,y),bal:L.total(D,y>t?t:y),part:y>=t})}
+ const mx=Math.max(1,...ms.map(m=>Math.max(m.income,m.expense)));
+ const first=D.tx.length?mkey([...D.tx].sort((p,q)=>p.date<q.date?-1:1)[0].date,st):cur,full=ms.filter(m=>!m.part&&m.k>=first),inc=full.map(m=>m.income);
+ const prev=full[full.length-1],pp=full[full.length-2],c=ms[ms.length-1],bc=L.byCat(D,a,b),rows=Object.entries(bc).sort((p,q)=>q[1]-p[1]),tot=sum(rows,r=>r[1]),mo=sum(D.subs.filter(s=>s.active),L.monthlyCost),spA=L.stats(D,a0,b0).expense;
+ const top=D.tx.filter(x=>x.type==='expense'&&x.status!=='planned'&&x.date>=a&&x.date<=b).sort((p,q)=>q.amount-p.amount).slice(0,5);
+ return `${mnav()}<h2>Ostatnie miesiące</h2><div class=card>${ms.map(m=>`<div style="padding:8px 0"><div class=row style="border:0;padding:0"><b>${mname(m.k)}${m.part?' <span class=warn>(niepełny)</span>':''}</b><span class=s>saldo ${fmt(m.bal)}</span></div><div class=bar><i style="width:${m.income/mx*100}%"></i></div><div class=bar style="margin-top:3px"><i class=o style="width:${m.expense/mx*100}%"></i></div><div class=s>dochód ${fmt(m.income)} · wydatki ${fmt(m.expense)} · odłożone ${fmt(m.saved)}</div></div>`).join('')}</div>
+ <h2>Dochody</h2><div class=card>${inc.length?`<div class=row><span>Średnia (pełne miesiące)</span><b>${fmt(Math.round(sum(inc,x=>x)/inc.length))}</b></div><div class=row><span>Najniższy / najwyższy</span><b>${fmt(Math.min(...inc))} / ${fmt(Math.max(...inc))}</b></div>${pp?`<div class=row><span>Ostatni pełny vs poprzedni</span><b>${fmt(prev.income-pp.income)}</b></div>`:''}`:'<div class=mu>Brak pełnych miesięcy do statystyk.</div>'}<div class=row><span>Wybrany miesiąc${c.part?' (niepełny)':''}</span><b>${fmt(c.income)}</b></div><div class=note>Średnia to tylko informacja z przeszłości, nie gwarantowany wpływ.</div></div>
+ <h2>Budżety kategorii (${mname(key)})</h2><div class=card>${(l=>l.length?l.map(cg=>{const sp=L.byCat(D,a0,b0)[cg.id]||0,p=Math.round(sp/cg.budget*100);return `<div style="padding:6px 0"><div class=row style="border:0;padding:0"><span>${esc(cg.name)}</span><b class="${sp>cg.budget?'bad':''}">${fmt(sp)} / ${fmt(cg.budget)}</b></div><div class=bar><i class="${sp>cg.budget?'o':''}" style="width:${Math.min(100,p)}%"></i></div><div class=s>${p}% · ${sp>cg.budget?'przekroczono o '+fmt(sp-cg.budget):'zostało '+fmt(cg.budget-sp)}</div></div>`}).join(''):'<div class=mu>Ustaw limity kategorii w Ustawieniach.</div>')(D.categories.filter(x=>x.budget>0))}<div class=note>Budżet to plan — nie zmienia salda.</div></div>
+ <h2>Wydatki wg kategorii</h2><div class=card><div class=g><div><label>Od</label><input type=date data-sf=sf value="${a}"></div><div><label>Do</label><input type=date data-sf=st value="${b}"></div></div>${rows.length?rows.map(r=>`<div class=row><span>${esc(cname(r[0]))}</span><b>${fmt(r[1])} <span class=s>${Math.round(r[1]/tot*100)}%</span></b></div>`).join(''):'<div class=mu>Brak wydatków w zakresie.</div>'}</div>
+ <h2>Największe wydatki</h2><div class=card>${top.length?top.map(txRow).join(''):'<div class=mu>Brak.</div>'}</div><h2>Subskrypcje</h2><div class=card><div class=row><span>Koszt miesięczny (przeliczenie)</span><b>${fmt(mo)}</b></div><div class=row><span>Udział w wydatkach miesiąca</span><b>${spA?Math.round(mo/spA*100)+'%':'brak danych'}</b></div></div>`}
+
+/* ---- praca ---- */
+function Work(){const t=T(),st=D.settings.monthStart,cur=mkey(t,st),key=UI.month||cur,[a,b]=mrange(key,st),w=L.work(D,a,b),S=L.workSeries(D,key,12,t),part=b>=t;
+ const items=D.tx.filter(x=>L.workCost(x)>0&&x.date>=a&&x.date<=b).sort((p,q)=>p.date<q.date?1:-1);
+ return `${mnav()}${D.sources.some(s=>s.salon)?'':'<div class="card warn">Nie wybrano źródła „zarobek z salonu”. Zaznacz je w Ustawienia → Źródła dochodu.</div>'}
+ <div class=g>${kc('Zarobek z salonu',fmt(w.salon),'ok',part?'miesiąc niepełny':'')}${kc('Koszty pracy',fmt(w.cost),'',part?'miesiąc niepełny':'')}${kc('Zarobek po kosztach',fmt(w.net),w.net<0?'bad':'ok')}${kc('Koszty / zarobek',w.salon?Math.round(w.cost/w.salon*100)+'%':'brak danych')}</div>
+ <div class=note style="margin-top:8px">Dodatkowe zestawienie — nie zmienia sald i niczego nie księguje drugi raz. Liczone są zrealizowane wpływy z oznaczonych źródeł oraz zrealizowane wydatki z ustawionym % kosztu pracy.</div>
+ <h2>Średnia z pełnych miesięcy</h2><div class=card>${S.avg?`<div class=row><span>Zarobek z salonu</span><b>${fmt(S.avg.salon)}</b></div><div class=row><span>Koszty pracy</span><b>${fmt(S.avg.cost)}</b></div><div class=row><span>Zarobek po kosztach</span><b class="${S.avg.net<0?'bad':'ok'}">${fmt(S.avg.net)}</b></div>`:'<div class=mu>Brak pełnych miesięcy z danymi.</div>'}<div class=note>Pełnych miesięcy: ${S.n}. Niepełny miesiąc nie jest wliczany. To średnia z przeszłości, nie obietnica przyszłych wpływów.</div></div>
+ <h2>Kolejne miesiące</h2><div class=card>${[...S.ms].reverse().map(m=>`<div class=row><div><b>${mname(m.k)}</b>${m.part?' <span class=warn>(niepełny)</span>':''}<div class=s>salon ${fmt(m.salon)} · koszty ${fmt(m.cost)}</div></div><div class="r ${m.net<0?'bad':''}">${fmt(m.net)}</div></div>`).join('')}</div>
+ <h2>Koszty pracy w wybranym miesiącu</h2><div class=card>${items.length?items.map(x=>`<div class=row><div data-act=edittx data-id=${x.id}><div>${esc(x.note||cname(x.catId))}</div><div class=s>${fdp(x.date)} · ${x.workPct}% z ${fmt(x.amount)}</div></div><div class=r>${fmt(L.workCost(x))}</div></div>`).join(''):'<div class=mu>Brak wydatków oznaczonych jako koszt pracy.</div>'}</div>`}
+
+/* ---- ustawienia ---- */
+function entForm(kind,e){const n=!e,isC=kind==='cat';e=e||{type:'expense'};const lst=isC?'categories':kind==='src'?'sources':'accounts';
+ form((n?'Nowa ':'Edytuj ')+({cat:'kategoria',src:'źródło',acc:'konto'})[kind],()=>[{k:'name',l:'Nazwa',t:'text',v:e.name,max:50}].concat(isC?[{k:'budget',l:'Miesięczny limit (zł, 0 = brak)',t:'money',v:e.budget?inp(e.budget):''},{k:'fav',l:'Ulubiona',t:'chk',v:e.fav}]:kind==='src'?[{k:'salon',l:'Zarobek z salonu (liczy się w sekcji Praca)',t:'chk',v:e.salon}]:kind==='acc'&&n?[{k:'opening',l:'Saldo początkowe (zł)',t:'money'}]:[]),
+ v=>{if(!v.name.trim())return'Podaj nazwę.';const o=Object.assign({},e,{id:e.id||uid(),name:v.name.trim()});
+  if(isC){const b=v.budget.trim()?money(v.budget,true):0;if(b===null)return'Błędny limit.';o.budget=b;o.fav=v.fav;o.type='expense'}if(kind==='src')o.salon=!!v.salon;
+  if(kind==='acc'&&n){const g=v.opening.trim()?toG(v.opening):0;if(g===null)return'Błędne saldo.';o.opening=g}
+  const i=D[lst].findIndex(x=>x.id===o.id);if(i>=0)D[lst][i]=o;else D[lst].push(o);return null},
+ n?null:()=>{if(kind==='acc'){if(D.tx.some(t=>t.accId===e.id||t.toAccId===e.id)||D.subs.some(s=>s.accId===e.id)||D.obligations.some(s=>s.accId===e.id)){toast('Konto ma transakcje lub zobowiązania — nie można go usunąć.','err');return}if(D.accounts.length<2){toast('Musi zostać co najmniej jedno konto.','err');return}}
+  D[lst]=D[lst].filter(x=>x.id!==e.id);for(const l of[D.tx,D.subs,D.obligations])for(const x of l){if(isC&&x.catId===e.id)x.catId=null;if(kind==='src'&&x.srcId===e.id)x.srcId=null}})}
+function adjForm(id){form('Korekta salda — '+aname(id),()=>[{k:'bal',l:'Rzeczywiste saldo teraz (zł)',t:'money',v:inp(L.accBal(D,id))},{k:'note',l:'Powód',t:'text',v:'Korekta salda',max:80}],v=>{const g=toG(v.bal);if(g===null)return'Błędna kwota.';const diff=g-L.accBal(D,id);if(!diff)return'Saldo jest już takie samo.';D.tx.push({id:uid(),type:'adjust',amount:diff,date:T(),accId:id,note:v.note||'Korekta salda',status:'done'});return null})}
+const dl=async(name,txt,type)=>{try{const d=window.claude&&await window.claude.use('downloads');if(d){await d.save({filename:name,data:txt});return true}}catch(e){if(e&&e.code==='declined')return false;if(e&&e.code!=='unavailable'&&e.code!=='not_granted'){toast('Nie udało się zapisać pliku: '+(e.message||e.code),'err');return false}}
+ try{const u=URL.createObjectURL(new Blob([txt],{type}));const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);return true}catch(e){return false}};
+function csv(){const q=s=>'"'+(/^[=+\-@]/.test(s)?"'"+s:s).replace(/"/g,'""')+'"',R=[['Data','Rodzaj','Kwota','Kategoria','Konto','Na konto','Opis','Status','Praca %']];
+ for(const t of[...D.tx].sort((a,b)=>a.date<b.date?-1:1))R.push([t.date,t.type,inp(t.amount),t.type==='transfer'?'':cname(t.catId),aname(t.accId),t.toAccId?aname(t.toAccId):'',t.note||'',t.status,t.workPct||0]);
+ dl('transakcje.csv','\uFEFF'+R.map(r=>r.map(q).join(';')).join('\r\n'),'text/csv')}
+function SetTab(){const S=L.summary(D,T()),sec=(t,add,items)=>`<h2>${t}</h2><div class=card>${items}<div class=btns><button class="btn sm" data-act=${add}>+ Dodaj</button></div></div>`;
+ return `<div class=card><div class=row><span>Początek miesiąca budżetowego (dzień 1–28)</span><input type=number min=1 max=28 style="width:70px;margin:0" data-set=monthStart value="${D.settings.monthStart}"></div></div>
+ ${sec('Konta','newacc',D.accounts.map(a=>`<div class=row><div data-act=editacc data-id=${a.id}>${esc(a.name)}<div class=s>saldo początkowe ${fmt(a.opening)}</div></div><div class=r>${fmt(L.accBal(D,a.id))}<div><button class="btn ghost sm" data-act=adj data-id=${a.id}>Koryguj</button></div></div></div>`).join(''))}
+ ${sec('Kategorie','newcat',D.categories.map(c=>`<div class=row data-act=editcat data-id=${c.id}><span>${c.fav?'★ ':''}${esc(c.name)}</span><span class=s>${c.budget?'limit '+fmt(c.budget):''}</span></div>`).join(''))}
+ ${sec('Źródła dochodu','newsrc',D.sources.map(c=>`<div class=row data-act=editsrc data-id=${c.id}><span>${esc(c.name)}${c.salon?' <span class=s>· salon</span>':''}</span></div>`).join(''))}
+ <h2>Kopia zapasowa</h2><div class=card><div class=note>Dane są w localStorage tej przeglądarki (dla tego adresu/pliku). Mogą zniknąć po wyczyszczeniu danych Safari lub nieużywaniu strony. Rób kopię JSON regularnie. Ostatnia: ${D.settings.lastBackup?new Date(D.settings.lastBackup).toLocaleString('pl-PL'):'nigdy'}.</div><div class=btns><button class=btn data-act=export>Eksport JSON</button><button class="btn ghost" data-act=impick>Import JSON</button><button class="btn ghost" data-act=csv>Eksport CSV</button></div><input type=file id=file accept=".json,application/json" style="display:none"></div>
+ <div class=card><button class="btn bad" data-act=wipe>Wyczyść wszystkie dane</button><div class=note style="margin-top:8px">Wersja aplikacji ${APP_VER}, schemat danych ${SCHEMA}.</div></div>`}
+
+/* ---- render + zdarzenia ---- */
+const TABS=[['home','🏠','Start',Home],['tx','🧾','Transakcje',Tx],['plan','📅','Plan',Plan],['env','✉️','Koperty',Env],['stats','📊','Analizy',Stats],['work','💼','Praca',Work],['set','⚙️','Ustawienia',SetTab]];
+function render(){const y=window.scrollY,ae=document.activeElement,fk=ae&&ae.dataset&&(ae.dataset.flt||ae.dataset.sf);
+ try{$('#app').innerHTML=TABS.find(t=>t[0]===UI.tab)[3]()}catch(e){$('#app').innerHTML='<div class="card bad">Błąd widoku: '+esc(e.message)+'</div>'}
+ $('#nav').innerHTML=TABS.map(t=>`<button class="${t[0]===UI.tab?'on':''}" data-tab=${t[0]}><b>${t[1]}</b>${t[2]}</button>`).join('');
+ if(fk&&ae.dataset.flt==='q'){const n=$('[data-flt=q]');if(n){n.focus();n.setSelectionRange(n.value.length,n.value.length)}}window.scrollTo(0,y)}
+function importFile(file){const r=new FileReader();r.onerror=()=>toast('Nie udało się odczytać pliku.','err');r.onload=()=>{let o;try{o=JSON.parse(r.result)}catch(e){return toast('Plik nie jest poprawnym JSON. Dane nie zostały zmienione.','err')}
+ const v=validate(o);if(!v.ok)return toast('Import odrzucony: '+v.err+' Dane nie zostały zmienione.','err');const n=v.data,c=x=>x.length;
+ ask(`Zastąpić dane? Obecne: ${c(D.tx)} transakcji, ${c(D.accounts)} kont, ${c(D.envelopes)} kopert, ${c(D.subs)} subskrypcji. Z pliku: ${c(n.tx)} transakcji, ${c(n.accounts)} kont, ${c(n.envelopes)} kopert, ${c(n.subs)} subskrypcji. Operacji nie można cofnąć.`,()=>{D=n;UI.month=null;commit();toast('Zaimportowano dane.')},'Zastąp dane')};r.readAsText(file)}
+const A={
+ quick,full:()=>txForm(),newtx:()=>txForm(),close,
+ qcat(d,el){M.quick.cat=d.id;document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on',c===el))},
+ qsave(){const g=money($('#qa').value);if(g===null){$('#err').textContent='Podaj kwotę większą od 0.';return}const acc=$('#qacc').value;D.tx.push({id:uid(),type:'expense',amount:g,date:T(),catId:M.quick.cat||null,accId:acc,note:'',status:'done'});D.settings.lastAcc=acc;close();commit();toast('Zapisano wydatek.')},
+ save(){if(lock())return;const v=readVals(M.fs),e=M.onSave(v);if(e){$('#err').textContent=e;return}close();commit();toast('Zapisano.')},
+ del(){const f=M.del;ask('Usunąć ten element? Operacji nie można cofnąć.',()=>{f();commit();toast('Usunięto.')},'Usuń')},
+ yes(){if(lock())return;const f=M.ask;close();f()},
+ edittx(d){const t=D.tx.find(x=>x.id===d.id);if(!t)return;if(t.type==='adjust')return ask('Usunąć korektę salda?',()=>{D.tx=D.tx.filter(x=>x.id!==t.id);commit()},'Usuń');txForm(t)},
+ repeat(d){if(lock())return;const t=D.tx.find(x=>x.id===d.id);if(!t)return;D.tx.push({...t,id:uid(),date:T(),status:'done',dueId:undefined});commit();toast('Powtórzono transakcję z dzisiejszą datą.')},
+ mon(d){const cur=mkey(T(),D.settings.monthStart),k=shiftKey(UI.month||cur,+d.n);UI.month=k===cur?null:k;UI.sf=UI.st='';render()},
+ curmon(){UI.month=null;UI.sf=UI.st='';render()},
+ txmonth(){const st=D.settings.monthStart,[a,b]=mrange(UI.month||mkey(T(),st),st);UI.f.from=a;UI.f.to=b;UI.tab='tx';render();window.scrollTo(0,0)},
+ pay(d){ask('Oznaczyć jako opłaconą dziś i zaksięgować?',()=>{if(L.pay(D,d.kind,d.id,d.date,T())){commit();toast('Zaksięgowano płatność.')}else toast('Ta płatność jest już zaksięgowana.','err')},'Opłacone')},
+ newsub:()=>subForm(),editsub:d=>subForm(D.subs.find(x=>x.id===d.id)),newob:()=>obForm(),editob:d=>obForm(D.obligations.find(x=>x.id===d.id)),
+ newenv:()=>envForm(),envd:d=>envDetail(d.id),editenv:d=>envForm(D.envelopes.find(x=>x.id===d.id)),emove:d=>moveForm(d.id),
+ delmove(d){const m=D.envMoves.find(x=>x.id===d.id);if(!m)return;const eid=m.envId;ask('Usunąć ten ruch?',()=>{D.envMoves=D.envMoves.filter(x=>m.pair?x.pair!==m.pair:x.id!==m.id);commit();envDetail(eid)},'Usuń')},
+ newacc:()=>entForm('acc'),editacc:d=>entForm('acc',D.accounts.find(x=>x.id===d.id)),newcat:()=>entForm('cat'),editcat:d=>entForm('cat',D.categories.find(x=>x.id===d.id)),newsrc:()=>entForm('src'),editsrc:d=>entForm('src',D.sources.find(x=>x.id===d.id)),adj:d=>adjForm(d.id),
+ async export(){if(!await dl('finanse-kopia-'+T()+'.json',JSON.stringify({app:'pfm',appVersion:APP_VER,schema:SCHEMA,exportedAt:new Date().toISOString(),data:D},null,1),'application/json'))return;D.settings.lastBackup=Date.now();persist();render();toast('Kopia została zapisana.')},
+ impick(){$('#file').value='';$('#file').click()},csv,
+ wipe(){ask('Usunąć WSZYSTKIE dane? Tego nie można cofnąć. Zrób najpierw eksport JSON.',()=>{D=defaults();UI.month=null;commit();toast('Dane wyczyszczone.')},'Wyczyść wszystko')}};
+document.addEventListener('click',e=>{const n=e.target.closest('[data-tab]');if(n){UI.tab=n.dataset.tab;UI.month=UI.month;render();window.scrollTo(0,0);return}const a=e.target.closest('[data-act]');if(a&&A[a.dataset.act]){e.stopPropagation();A[a.dataset.act](a.dataset,a)}});
+document.addEventListener('change',e=>{const t=e.target;
+ if(t.id==='file'&&t.files[0])return importFile(t.files[0]);
+ if(t.dataset.mp){if(/^\d{4}-(0[1-9]|1[0-2])$/.test(t.value)){const cur=mkey(T(),D.settings.monthStart);UI.month=t.value===cur?null:t.value;UI.sf=UI.st='';render()}return}
+ if(t.dataset.re&&M&&M.build){const v=readVals(M.fs),b=M.build,s=M.onSave,d=M.del,ti=M.title;form(ti,b,s,d,v);return}
+ if(t.dataset.flt){UI.f[t.dataset.flt]=t.value;render()}
+ if(t.dataset.sf){UI[t.dataset.sf]=t.value;render()}
+ if(t.dataset.set==='monthStart'){const n=parseInt(t.value,10);if(n>=1&&n<=28){D.settings.monthStart=n;UI.month=null;commit()}else toast('Podaj dzień 1–28.','err')}});
+document.addEventListener('input',e=>{if(e.target.dataset.flt==='q'){UI.f.q=e.target.value;render()}});
+load();render();window.__ok=1;
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&$('#mo').style.display!=='flex')render()});
+}
+</script></body></html>
